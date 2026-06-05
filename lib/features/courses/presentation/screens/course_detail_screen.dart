@@ -550,8 +550,7 @@ class _CourseCTABar extends ConsumerWidget {
             child: PrimaryButton(
               text: '  Buy Course  –  ฿${course.price.toStringAsFixed(0)}',
               isLoading: purchaseState is AsyncLoading,
-              onPressed: () =>
-                  _showPurchaseDialog(context, ref),
+              onPressed: () => context.go('/home/booking/${course.id}'),
             ),
           );
         }
@@ -629,7 +628,7 @@ class _CourseCTABar extends ConsumerWidget {
       error: (_, __) => _buildBottomBar(
         child: PrimaryButton(
           text: '  Buy Course  –  ฿${course.price.toStringAsFixed(0)}',
-          onPressed: () => _showPurchaseDialog(context, ref),
+          onPressed: () => context.go('/home/booking/${course.id}'),
         ),
       ),
     );
@@ -651,157 +650,7 @@ class _CourseCTABar extends ConsumerWidget {
       child: child,
     );
   }
-
-  void _showPurchaseDialog(BuildContext context, WidgetRef ref) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => _PurchaseDialog(
-        course: course,
-        onConfirm: () async {
-          Navigator.of(ctx).pop();
-          final success = await ref
-              .read(purchaseCourseProvider.notifier)
-              .purchase(course.id);
-          if (success && context.mounted) {
-            // Add notifications to the notification centre
-            final notif = ref.read(notificationProvider.notifier);
-            notif.add(AppNotification.paymentSuccess(
-              courseName: course.name,
-              amount: course.price,
-            ));
-            notif.add(AppNotification.enrollmentConfirmed(
-              courseName: course.name,
-            ));
-
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: const Text(
-                    '🎉 ชำระเงินสำเร็จ! คุณสามารถเริ่มเรียนได้แล้ว'),
-                backgroundColor: AppTheme.successColor,
-                duration: const Duration(seconds: 3),
-              ),
-            );
-          }
-        },
-      ),
-    );
   }
-}
-
-// ─────────────────────────────────────────────
-// Purchase Confirmation Dialog
-// ─────────────────────────────────────────────
-
-class _PurchaseDialog extends StatelessWidget {
-  final Course course;
-  final VoidCallback onConfirm;
-
-  const _PurchaseDialog({required this.course, required this.onConfirm});
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppTheme.radiusLg)),
-      contentPadding: EdgeInsets.all(24.w),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Icon
-          Container(
-            width: 64.w,
-            height: 64.w,
-            decoration: BoxDecoration(
-              color: AppTheme.primaryColor.withOpacity(0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(Icons.shopping_cart, size: 32.sp,
-                color: AppTheme.primaryColor),
-          ),
-          SizedBox(height: 16.h),
-          Text(
-            'Confirm Purchase',
-            style: TextStyle(
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w700,
-              color: AppTheme.darkGrey,
-            ),
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            course.name,
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            style: TextStyle(fontSize: 13.sp, color: AppTheme.mediumGrey),
-          ),
-          SizedBox(height: 16.h),
-          Container(
-            padding:
-                EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
-            decoration: BoxDecoration(
-              color: AppTheme.veryLightGrey,
-              borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('Total',
-                    style: TextStyle(
-                        fontSize: 14.sp, color: AppTheme.mediumGrey)),
-                Text(
-                  '฿${course.price.toStringAsFixed(0)}',
-                  style: TextStyle(
-                    fontSize: 18.sp,
-                    fontWeight: FontWeight.w800,
-                    color: AppTheme.primaryColor,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(height: 20.h),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  style: OutlinedButton.styleFrom(
-                    padding: EdgeInsets.symmetric(vertical: 12.h),
-                    shape: RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(AppTheme.radiusMd)),
-                  ),
-                  child: Text('Cancel',
-                      style: TextStyle(fontSize: 14.sp)),
-                ),
-              ),
-              SizedBox(width: 12.w),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: onConfirm,
-                  style: ElevatedButton.styleFrom(
-                    padding: EdgeInsets.symmetric(vertical: 12.h),
-                    backgroundColor: AppTheme.primaryColor,
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(AppTheme.radiusMd)),
-                  ),
-                  child: Text('Confirm',
-                      style: TextStyle(
-                          fontSize: 14.sp, fontWeight: FontWeight.w700)),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 // ─────────────────────────────────────────────
 // Certificate Quick Button
 // ─────────────────────────────────────────────

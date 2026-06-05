@@ -72,3 +72,35 @@ DROP POLICY IF EXISTS "anon_insert_certificates" ON certificates;
 
 CREATE POLICY "anon_select_certificates" ON certificates FOR SELECT USING (true);
 CREATE POLICY "anon_insert_certificates"  ON certificates FOR INSERT WITH CHECK (true);
+
+-- ─── Step 6: users RLS ─────────────────────────────────────────
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users can view their own profile" ON users;
+DROP POLICY IF EXISTS "Users can insert their own profile" ON users;
+DROP POLICY IF EXISTS "Users can update their own profile" ON users;
+DROP POLICY IF EXISTS "anon_select_users" ON users;
+DROP POLICY IF EXISTS "anon_insert_users" ON users;
+DROP POLICY IF EXISTS "anon_update_users" ON users;
+
+CREATE POLICY "anon_select_users" ON users FOR SELECT USING (true);
+CREATE POLICY "anon_insert_users" ON users FOR INSERT WITH CHECK (true);
+CREATE POLICY "anon_update_users" ON users FOR UPDATE USING (true);
+
+-- ─── Step 7: bookings, payments, and class_sessions RLS ────────
+ALTER TABLE bookings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE payments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE class_sessions ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users can view their own bookings" ON bookings;
+DROP POLICY IF EXISTS "anon_all_bookings" ON bookings;
+CREATE POLICY "anon_all_bookings" ON bookings FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Users can view their own payments" ON payments;
+DROP POLICY IF EXISTS "anon_all_payments" ON payments;
+CREATE POLICY "anon_all_payments" ON payments FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "anon_all_sessions" ON class_sessions;
+CREATE POLICY "anon_all_sessions" ON class_sessions FOR ALL USING (true) WITH CHECK (true);
+
+

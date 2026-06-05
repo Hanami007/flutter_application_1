@@ -11,21 +11,26 @@ import 'package:supabase_flutter/supabase_flutter.dart' show Supabase, AuthExcep
 import 'package:learn_hub/features/auth/domain/providers/auth_provider.dart';
 import 'package:learn_hub/features/auth/domain/entities/user.dart';
 
-class LoginScreen extends ConsumerStatefulWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+class RegisterScreen extends ConsumerStatefulWidget {
+  const RegisterScreen({Key? key}) : super(key: key);
 
   @override
-  ConsumerState<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _LoginScreenState extends ConsumerState<LoginScreen>
+class _RegisterScreenState extends ConsumerState<RegisterScreen>
     with TickerProviderStateMixin {
+  final _fullNameController = TextEditingController();
   final _emailController = TextEditingController();
+  final _phoneNumberController = TextEditingController();
+  final _addressController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
   bool _isLoading = false;
   bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
 
   late AnimationController _bgController;
   late AnimationController _contentController;
@@ -61,8 +66,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
 
   @override
   void dispose() {
+    _fullNameController.dispose();
     _emailController.dispose();
+    _phoneNumberController.dispose();
+    _addressController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     _bgController.dispose();
     _contentController.dispose();
     super.dispose();
@@ -77,45 +86,50 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     }
   }
 
-  void _handleLogin() async {
+  void _handleRegister() async {
     if (_formKey.currentState?.validate() ?? false) {
       setState(() => _isLoading = true);
       try {
-        if (_isSupabaseConfigured) {
-          final repo = ref.read(authRepositoryProvider);
-          final user = await repo.loginWithEmail(
-            _emailController.text.trim(),
-            _passwordController.text.trim(),
+        final repo = ref.read(authRepositoryProvider);
+        final user = await repo.registerWithEmail(
+          _emailController.text.trim(),
+          _passwordController.text.trim(),
+          fullName: _fullNameController.text.trim(),
+          phoneNumber: _phoneNumberController.text.trim().isNotEmpty
+              ? _phoneNumberController.text.trim()
+              : null,
+          address: _addressController.text.trim().isNotEmpty
+              ? _addressController.text.trim()
+              : null,
+        );
+
+        if (mounted) {
+          // Trigger immediate sign-in with the registered user state
+          ref.read(authStateProvider.notifier).state = AuthState.authenticated(user);
+          ref.read(currentUserProvider.notifier).setUser(user);
+          
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Registration successful!'),
+              backgroundColor: Color(0xFF4CAF88),
+            ),
           );
-          if (mounted) {
-            ref.read(authStateProvider.notifier).state = AuthState.authenticated(user);
-            ref.read(currentUserProvider.notifier).setUser(user);
-            context.go('/home');
-          }
-        } else {
-          // Mock mode fallback
-          await Future.delayed(const Duration(seconds: 1));
-          if (mounted) {
-            final user = User(
-              id: '9999ee9d-ff46-4cb4-972c-f68482bf4f17',
-              email: _emailController.text,
-              fullName: 'Guest User (Mock)',
-              createdAt: DateTime.now(),
-            );
-            ref.read(authStateProvider.notifier).state = AuthState.authenticated(user);
-            ref.read(currentUserProvider.notifier).setUser(user);
-            context.go('/home');
-          }
+
+          context.go('/home');
         }
       } on AuthException catch (e) {
         if (mounted) {
           String msg = e.message;
-          if (e.message.contains('Invalid login credentials')) {
-            msg = 'อีเมลหรือรหัสผ่านไม่ถูกต้อง กรุณาตรวจสอบอีกครั้ง หรือสมัครสมาชิกหากยังไม่มีบัญชี';
-          } else if (e.message.toLowerCase().contains('email not confirmed')) {
-            msg = 'อีเมลนี้ยังไม่ได้รับการยืนยันตัวตน กรุณายืนยันผ่านลิงก์ในอีเมลของคุณ หรือปิดใช้งาน "Confirm email" ในหน้า Supabase Dashboard';
+          if (e.message.toLowerCase().contains('confirm') || e.message.toLowerCase().contains('verification')) {
+            msg = 'การสมัครสมาชิกสำเร็จ! โปรดตรวจสอบอีเมลเพื่อยืนยันตัวตนก่อนเข้าสู่ระบบ';
+          } else if (e.message.contains('Email signup is disabled')) {
+            msg = 'การสมัครสมาชิกถูกปิดใช้งานชั่วคราว (กรุณาตรวจสอบว่าเปิด "Allow new users to sign up" ใน Supabase Dashboard หรือยัง)';
+          } else if (e.message.contains('User already registered')) {
+            msg = 'อีเมลนี้ถูกใช้งานไปแล้วในระบบ กรุณาใช้อีเมลอื่นหรือเข้าสู่ระบบ';
           } else if (e.message.toLowerCase().contains('rate limit') || e.message.toLowerCase().contains('too many requests') || e.statusCode == '429') {
             msg = 'คุณส่งคำขอถี่เกินไปชั่วคราว (Rate Limit) กรุณารอ 1-2 นาที หรือเพิ่มขีดจำกัด Email Rate Limit ในหน้า Supabase Dashboard > Settings > Auth';
+          } else {
+            msg = 'การสมัครสมาชิกล้มเหลว: ${e.message}';
           }
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -128,7 +142,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Login failed: ${e.toString()}'),
+              content: Text('Registration failed: ${e.toString()}'),
               backgroundColor: Colors.redAccent,
             ),
           );
@@ -181,7 +195,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
             ),
           ),
 
-          // ── Decorative circle top-right ─────────────────────────
+          // ── Decorative circles ──────────────────────────────────
           Positioned(
             top: -30,
             right: -30,
@@ -191,20 +205,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: AppTheme.primaryColor.withOpacity(0.07),
-              ),
-            ),
-          ),
-
-          // ── Decorative circle bottom-left ───────────────────────
-          Positioned(
-            bottom: 40,
-            left: -50,
-            child: Container(
-              width: 160.w,
-              height: 160.w,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppTheme.primaryColor.withOpacity(0.05),
               ),
             ),
           ),
@@ -226,13 +226,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SizedBox(height: 48.h),
+                        SizedBox(height: 20.h),
 
                         // ── Logo ──────────────────────────────────
                         Center(
                           child: Container(
-                            width: 88.w,
-                            height: 88.w,
+                            width: 72.w,
+                            height: 72.w,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               gradient: LinearGradient(
@@ -243,48 +243,55 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                   AppTheme.primaryColor.withOpacity(0.7),
                                 ],
                               ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppTheme.primaryColor.withOpacity(
-                                    0.35,
-                                  ),
-                                  blurRadius: 24,
-                                  offset: const Offset(0, 8),
-                                ),
-                              ],
                             ),
                             child: Icon(
                               Icons.school_rounded,
-                              size: 42.sp,
+                              size: 36.sp,
                               color: Colors.white,
                             ),
                           ),
                         ),
-                        SizedBox(height: 32.h),
+                        SizedBox(height: 24.h),
 
                         // ── Heading ───────────────────────────────
                         Text(
-                          'Welcome Back!',
+                          'Create Account',
                           style: GoogleFonts.poppins(
-                            fontSize: 28.sp,
+                            fontSize: 26.sp,
                             fontWeight: FontWeight.w700,
                             color: AppTheme.darkGrey,
                             height: 1.2,
                           ),
                         ),
-                        SizedBox(height: 6.h),
+                        SizedBox(height: 4.h),
                         Text(
-                          'Login to continue your learning journey',
+                          'Register to start your premium learning journey',
                           style: GoogleFonts.inter(
-                            fontSize: 15.sp,
+                            fontSize: 14.sp,
                             color: AppTheme.mediumGrey,
                           ),
                         ),
-                        SizedBox(height: 36.h),
+                        SizedBox(height: 28.h),
+
+                        // ── Full Name ─────────────────────────────
+                        const _FieldLabel(label: 'Full Name'),
+                        SizedBox(height: 6.h),
+                        _StyledField(
+                          controller: _fullNameController,
+                          hint: 'Your Full Name',
+                          prefixIcon: Icons.person_outline,
+                          validator: (v) {
+                            if (v == null || v.trim().isEmpty) {
+                              return 'Full Name is required';
+                            }
+                            return null;
+                          },
+                        ),
+                        SizedBox(height: 16.h),
 
                         // ── Email ─────────────────────────────────
                         _FieldLabel(label: AppStrings.email),
-                        SizedBox(height: 8.h),
+                        SizedBox(height: 6.h),
                         _StyledField(
                           controller: _emailController,
                           hint: 'your@email.com',
@@ -298,11 +305,32 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                             return null;
                           },
                         ),
-                        SizedBox(height: 20.h),
+                        SizedBox(height: 16.h),
+
+                        // ── Phone Number (Optional) ───────────────
+                        const _FieldLabel(label: 'Phone Number (Optional)'),
+                        SizedBox(height: 6.h),
+                        _StyledField(
+                          controller: _phoneNumberController,
+                          hint: '0812345678',
+                          keyboardType: TextInputType.phone,
+                          prefixIcon: Icons.phone_outlined,
+                        ),
+                        SizedBox(height: 16.h),
+
+                        // ── Address (Optional) ────────────────────
+                        const _FieldLabel(label: 'Address (Optional)'),
+                        SizedBox(height: 6.h),
+                        _StyledField(
+                          controller: _addressController,
+                          hint: 'Your address',
+                          prefixIcon: Icons.home_outlined,
+                        ),
+                        SizedBox(height: 16.h),
 
                         // ── Password ──────────────────────────────
                         _FieldLabel(label: AppStrings.password),
-                        SizedBox(height: 8.h),
+                        SizedBox(height: 6.h),
                         _StyledField(
                           controller: _passwordController,
                           hint: '••••••••',
@@ -328,59 +356,64 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                             return null;
                           },
                         ),
+                        SizedBox(height: 16.h),
 
-                        // ── Forgot password ───────────────────────
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: TextButton(
-                            onPressed: () {},
-                            style: TextButton.styleFrom(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 4.w,
-                                vertical: 4.h,
-                              ),
+                        // ── Confirm Password ──────────────────────
+                        const _FieldLabel(label: 'Confirm Password'),
+                        SizedBox(height: 6.h),
+                        _StyledField(
+                          controller: _confirmPasswordController,
+                          hint: '••••••••',
+                          obscureText: _obscureConfirmPassword,
+                          prefixIcon: Icons.lock_clock_outlined,
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscureConfirmPassword
+                                  ? Icons.visibility_outlined
+                                  : Icons.visibility_off_outlined,
+                              size: 20.sp,
+                              color: AppTheme.mediumGrey,
                             ),
-                            child: Text(
-                              AppStrings.forgotPassword,
-                              style: GoogleFonts.inter(
-                                color: AppTheme.primaryColor,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 13.sp,
-                              ),
+                            onPressed: () => setState(
+                              () => _obscureConfirmPassword = !_obscureConfirmPassword,
                             ),
                           ),
-                        ),
-                        SizedBox(height: 24.h),
-
-                        // ── Login button ──────────────────────────
-                        _GradientButton(
-                          text: AppStrings.login,
-                          isLoading: _isLoading,
-                          onPressed: _handleLogin,
+                          validator: (v) {
+                            if (v == null || v.isEmpty)
+                              return AppStrings.fieldRequired;
+                            if (v != _passwordController.text)
+                              return 'Passwords do not match';
+                            return null;
+                          },
                         ),
                         SizedBox(height: 28.h),
 
-                        // ── Divider ───────────────────────────────
-                        SizedBox(height: 24.h),
+                        // ── Register button ───────────────────────
+                        _GradientButton(
+                          text: AppStrings.signup,
+                          isLoading: _isLoading,
+                          onPressed: _handleRegister,
+                        ),
+                        SizedBox(height: 20.h),
 
-                        // ── Register link ─────────────────────────
+                        // ── Login link ────────────────────────────
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              AppStrings.dontHaveAccount,
+                              'Already have an account?',
                               style: GoogleFonts.inter(
                                 color: AppTheme.mediumGrey,
                                 fontSize: 14.sp,
                               ),
                             ),
                             TextButton(
-                              onPressed: () => context.go('/auth/register'),
+                              onPressed: () => context.go('/auth/login'),
                               style: TextButton.styleFrom(
                                 padding: EdgeInsets.symmetric(horizontal: 6.w),
                               ),
                               child: Text(
-                                AppStrings.signup,
+                                AppStrings.login,
                                 style: GoogleFonts.inter(
                                   color: AppTheme.primaryColor,
                                   fontWeight: FontWeight.w700,
@@ -552,4 +585,3 @@ class _GradientButton extends StatelessWidget {
     );
   }
 }
-

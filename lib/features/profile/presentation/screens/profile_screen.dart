@@ -13,6 +13,7 @@ class ProfileScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final currentUser = ref.watch(currentUserProvider);
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
@@ -37,12 +38,12 @@ class ProfileScreen extends ConsumerWidget {
                   ),
                   SizedBox(height: 16.h),
                   Text(
-                    'John Doe',
+                    currentUser?.fullName ?? 'Guest User',
                     style: Theme.of(context).textTheme.headlineSmall,
                   ),
                   SizedBox(height: 4.h),
                   Text(
-                    'john@example.com',
+                    currentUser?.email ?? 'No email associated',
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   SizedBox(height: 16.h),

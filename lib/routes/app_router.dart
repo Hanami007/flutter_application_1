@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../features/auth/domain/providers/auth_provider.dart';
 import '../features/auth/presentation/screens/splash_screen.dart';
 import '../features/auth/presentation/screens/login_screen.dart';
+import '../features/auth/presentation/screens/register_screen.dart';
 import '../features/home/presentation/screens/home_screen.dart';
 import '../features/courses/presentation/screens/course_list_screen.dart';
 import '../features/courses/presentation/screens/course_detail_screen.dart';
@@ -64,9 +65,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       // Register Screen
       GoRoute(
         path: '/auth/register',
-        builder: (context, state) => Scaffold(
-          body: Center(child: Text('Register Screen')),
-        ),
+        builder: (context, state) => const RegisterScreen(),
       ),
       // Home Screen
       GoRoute(

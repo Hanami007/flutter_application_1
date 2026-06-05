@@ -3,6 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show Supabase;
+import 'package:learn_hub/features/auth/domain/providers/auth_provider.dart';
+import 'package:learn_hub/features/auth/domain/entities/user.dart';
 
 // ─── Brand colors (ดึงมาจาก design ของ Lumina Learn) ─────────────────────────
 class _Brand {
@@ -12,14 +16,14 @@ class _Brand {
   static const surface    = Color(0xFFF0FAF5); // เขียวอ่อนมากสำหรับพื้นหลัง
 }
 
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen>
+class _SplashScreenState extends ConsumerState<SplashScreen>
     with TickerProviderStateMixin {
   late AnimationController _logoController;
   late AnimationController _textController;
@@ -89,8 +93,27 @@ class _SplashScreenState extends State<SplashScreen>
 
     _logoController.forward().then((_) => _textController.forward());
 
-    Future.delayed(const Duration(seconds: 3), () {
-      if (mounted) context.go('/auth/login');
+    Future.delayed(const Duration(seconds: 3), () async {
+      if (!mounted) return;
+
+      try {
+        final client = Supabase.instance.client;
+        final currentUser = client.auth.currentUser;
+        if (currentUser != null) {
+          final repo = ref.read(authRepositoryProvider);
+          final user = await repo.getCurrentUser();
+          if (user != null && mounted) {
+            ref.read(authStateProvider.notifier).state = AuthState.authenticated(user);
+            ref.read(currentUserProvider.notifier).setUser(user);
+            context.go('/home');
+            return;
+          }
+        }
+      } catch (_) {}
+
+      if (mounted) {
+        context.go('/auth/login');
+      }
     });
   }
 

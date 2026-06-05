@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:learn_hub/features/booking/domain/providers/booking_provider.dart';
+import 'package:learn_hub/features/enrollment/domain/providers/enrollment_provider.dart';
 import 'package:learn_hub/features/auth/domain/providers/auth_provider.dart';
 import '../../domain/entities/booking.dart' as booking_entity;
 import 'package:learn_hub/core/theme/app_theme.dart';
@@ -102,8 +103,7 @@ class BookingSuccessScreen extends ConsumerWidget {
   Widget _buildDetailsCard(BuildContext context, WidgetRef ref) {
     // Try payload booking first
     final payloadBooking = payload != null ? payload!['booking'] as booking_entity.Booking? : null;
-    final currentUser = ref.watch(currentUserProvider);
-    final userId = currentUser?.id ?? '1';
+    final userId = ref.watch(currentUserIdProvider);
 
     if (payloadBooking != null) {
       final branchId = payload!['branchId'] as String?;
