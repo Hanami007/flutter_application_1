@@ -72,6 +72,12 @@ class CourseRepository {
       'totalStudents': dbJson['total_students'] != null
           ? int.parse(dbJson['total_students'].toString())
           : (dbJson['totalStudents'] != null ? int.parse(dbJson['totalStudents'].toString()) : 0),
+      'whatYouWillLearn': dbJson['what_you_will_learn'] != null
+          ? List<String>.from(dbJson['what_you_will_learn'] as List)
+          : (dbJson['whatYouWillLearn'] != null ? List<String>.from(dbJson['whatYouWillLearn'] as List) : null),
+      'requirements': dbJson['requirements'] != null
+          ? List<String>.from(dbJson['requirements'] as List)
+          : (dbJson['requirements'] != null ? List<String>.from(dbJson['requirements'] as List) : null),
       'createdAt': dbJson['created_at'] ?? dbJson['createdAt'],
       'updatedAt': dbJson['updated_at'] ?? dbJson['updatedAt'],
     };

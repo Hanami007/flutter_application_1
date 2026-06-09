@@ -17,6 +17,8 @@ class Course with _$Course {
     required String level,
     @Default(0.0) double rating,
     @Default(0) int totalStudents,
+    List<String>? whatYouWillLearn,
+    List<String>? requirements,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) = _Course;

@@ -218,10 +218,14 @@ class _CourseDetailBody extends ConsumerWidget {
                     style: Theme.of(context).textTheme.headlineSmall,
                   ),
                   SizedBox(height: 12.h),
-                  _buildLearnPoint('Master the core concepts and tools'),
-                  _buildLearnPoint('Build real-world projects'),
-                  _buildLearnPoint('Get industry-recognized certification'),
-                  _buildLearnPoint('Join our community of 1,500+ learners'),
+                  if (course.whatYouWillLearn != null && course.whatYouWillLearn!.isNotEmpty)
+                    ...course.whatYouWillLearn!.map((point) => _buildLearnPoint(point))
+                  else ...[
+                    _buildLearnPoint('Master the core concepts and tools'),
+                    _buildLearnPoint('Build real-world projects'),
+                    _buildLearnPoint('Get industry-recognized certification'),
+                    _buildLearnPoint('Join our community of 1,500+ learners'),
+                  ],
 
                   SizedBox(height: 24.h),
 
@@ -231,8 +235,12 @@ class _CourseDetailBody extends ConsumerWidget {
                     style: Theme.of(context).textTheme.headlineSmall,
                   ),
                   SizedBox(height: 12.h),
-                  _buildRequirement('Basic computer knowledge'),
-                  _buildRequirement('A passion for learning'),
+                  if (course.requirements != null && course.requirements!.isNotEmpty)
+                    ...course.requirements!.map((req) => _buildRequirement(req))
+                  else ...[
+                    _buildRequirement('Basic computer knowledge'),
+                    _buildRequirement('A passion for learning'),
+                  ],
 
                   SizedBox(height: 32.h),
                 ],

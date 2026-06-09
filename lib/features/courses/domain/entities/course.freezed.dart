@@ -32,6 +32,8 @@ mixin _$Course {
   String get level => throw _privateConstructorUsedError;
   double get rating => throw _privateConstructorUsedError;
   int get totalStudents => throw _privateConstructorUsedError;
+  List<String>? get whatYouWillLearn => throw _privateConstructorUsedError;
+  List<String>? get requirements => throw _privateConstructorUsedError;
   DateTime? get createdAt => throw _privateConstructorUsedError;
   DateTime? get updatedAt => throw _privateConstructorUsedError;
 
@@ -61,6 +63,8 @@ abstract class $CourseCopyWith<$Res> {
     String level,
     double rating,
     int totalStudents,
+    List<String>? whatYouWillLearn,
+    List<String>? requirements,
     DateTime? createdAt,
     DateTime? updatedAt,
   });
@@ -92,6 +96,8 @@ class _$CourseCopyWithImpl<$Res, $Val extends Course>
     Object? level = null,
     Object? rating = null,
     Object? totalStudents = null,
+    Object? whatYouWillLearn = freezed,
+    Object? requirements = freezed,
     Object? createdAt = freezed,
     Object? updatedAt = freezed,
   }) {
@@ -141,6 +147,14 @@ class _$CourseCopyWithImpl<$Res, $Val extends Course>
                 ? _value.totalStudents
                 : totalStudents // ignore: cast_nullable_to_non_nullable
                       as int,
+            whatYouWillLearn: freezed == whatYouWillLearn
+                ? _value.whatYouWillLearn
+                : whatYouWillLearn // ignore: cast_nullable_to_non_nullable
+                      as List<String>?,
+            requirements: freezed == requirements
+                ? _value.requirements
+                : requirements // ignore: cast_nullable_to_non_nullable
+                      as List<String>?,
             createdAt: freezed == createdAt
                 ? _value.createdAt
                 : createdAt // ignore: cast_nullable_to_non_nullable
@@ -175,6 +189,8 @@ abstract class _$$CourseImplCopyWith<$Res> implements $CourseCopyWith<$Res> {
     String level,
     double rating,
     int totalStudents,
+    List<String>? whatYouWillLearn,
+    List<String>? requirements,
     DateTime? createdAt,
     DateTime? updatedAt,
   });
@@ -205,6 +221,8 @@ class __$$CourseImplCopyWithImpl<$Res>
     Object? level = null,
     Object? rating = null,
     Object? totalStudents = null,
+    Object? whatYouWillLearn = freezed,
+    Object? requirements = freezed,
     Object? createdAt = freezed,
     Object? updatedAt = freezed,
   }) {
@@ -254,6 +272,14 @@ class __$$CourseImplCopyWithImpl<$Res>
             ? _value.totalStudents
             : totalStudents // ignore: cast_nullable_to_non_nullable
                   as int,
+        whatYouWillLearn: freezed == whatYouWillLearn
+            ? _value._whatYouWillLearn
+            : whatYouWillLearn // ignore: cast_nullable_to_non_nullable
+                  as List<String>?,
+        requirements: freezed == requirements
+            ? _value._requirements
+            : requirements // ignore: cast_nullable_to_non_nullable
+                  as List<String>?,
         createdAt: freezed == createdAt
             ? _value.createdAt
             : createdAt // ignore: cast_nullable_to_non_nullable
@@ -282,9 +308,12 @@ class _$CourseImpl implements _Course {
     required this.level,
     this.rating = 0.0,
     this.totalStudents = 0,
+    final List<String>? whatYouWillLearn,
+    final List<String>? requirements,
     this.createdAt,
     this.updatedAt,
-  });
+  }) : _whatYouWillLearn = whatYouWillLearn,
+       _requirements = requirements;
 
   factory _$CourseImpl.fromJson(Map<String, dynamic> json) =>
       _$$CourseImplFromJson(json);
@@ -313,6 +342,26 @@ class _$CourseImpl implements _Course {
   @override
   @JsonKey()
   final int totalStudents;
+  final List<String>? _whatYouWillLearn;
+  @override
+  List<String>? get whatYouWillLearn {
+    final value = _whatYouWillLearn;
+    if (value == null) return null;
+    if (_whatYouWillLearn is EqualUnmodifiableListView) return _whatYouWillLearn;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(value);
+  }
+
+  final List<String>? _requirements;
+  @override
+  List<String>? get requirements {
+    final value = _requirements;
+    if (value == null) return null;
+    if (_requirements is EqualUnmodifiableListView) return _requirements;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(value);
+  }
+
   @override
   final DateTime? createdAt;
   @override
@@ -320,7 +369,7 @@ class _$CourseImpl implements _Course {
 
   @override
   String toString() {
-    return 'Course(id: $id, name: $name, description: $description, categoryId: $categoryId, instructorId: $instructorId, thumbnailUrl: $thumbnailUrl, price: $price, duration: $duration, level: $level, rating: $rating, totalStudents: $totalStudents, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'Course(id: $id, name: $name, description: $description, categoryId: $categoryId, instructorId: $instructorId, thumbnailUrl: $thumbnailUrl, price: $price, duration: $duration, level: $level, rating: $rating, totalStudents: $totalStudents, whatYouWillLearn: $whatYouWillLearn, requirements: $requirements, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 
   @override
@@ -345,6 +394,8 @@ class _$CourseImpl implements _Course {
             (identical(other.rating, rating) || other.rating == rating) &&
             (identical(other.totalStudents, totalStudents) ||
                 other.totalStudents == totalStudents) &&
+            const DeepCollectionEquality().equals(other._whatYouWillLearn, _whatYouWillLearn) &&
+            const DeepCollectionEquality().equals(other._requirements, _requirements) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.updatedAt, updatedAt) ||
@@ -366,6 +417,8 @@ class _$CourseImpl implements _Course {
     level,
     rating,
     totalStudents,
+    const DeepCollectionEquality().hash(_whatYouWillLearn),
+    const DeepCollectionEquality().hash(_requirements),
     createdAt,
     updatedAt,
   );
@@ -397,6 +450,8 @@ abstract class _Course implements Course {
     required final String level,
     final double rating,
     final int totalStudents,
+    final List<String>? whatYouWillLearn,
+    final List<String>? requirements,
     final DateTime? createdAt,
     final DateTime? updatedAt,
   }) = _$CourseImpl;
