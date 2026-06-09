@@ -41,12 +41,10 @@ final currentUserIdProvider = Provider<String>((ref) {
 
   // Fall back to auth state provider
   final authState = ref.watch(authStateProvider);
-  return authState.maybeMap(
-    authenticated: (s) => _isValidUuid(s.user.id)
-        ? s.user.id
-        : '9999ee9d-ff46-4cb4-972c-f68482bf4f17',
-    orElse: () => '9999ee9d-ff46-4cb4-972c-f68482bf4f17', // dev mock user
-  );
+  final user = authState.userOrNull;
+  return user != null && _isValidUuid(user.id)
+      ? user.id
+      : '9999ee9d-ff46-4cb4-972c-f68482bf4f17'; // dev mock user
 });
 
 // ─────────────────────────────────────────────

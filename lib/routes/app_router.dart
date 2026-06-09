@@ -24,10 +24,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/',
     redirect: (context, state) {
-      final isAuthenticated = authState.maybeMap(
-        authenticated: (_) => true,
-        orElse: () => false,
-      );
+      final isAuthenticated = authState.isAuthenticated;
       final isAuthRoute = state.fullPath?.startsWith('/auth/') ?? false;
 
       if (!isAuthenticated && !isAuthRoute) {
@@ -45,10 +42,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/',
         redirect: (context, state) {
-          final isAuthenticated = authState.maybeMap(
-            authenticated: (_) => true,
-            orElse: () => false,
-          );
+          final isAuthenticated = authState.isAuthenticated;
           return isAuthenticated ? '/home' : '/auth/splash_screen';
         },
       ),

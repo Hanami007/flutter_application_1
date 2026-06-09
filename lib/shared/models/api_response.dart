@@ -4,7 +4,7 @@ part 'api_response.freezed.dart';
 part 'api_response.g.dart';
 
 @Freezed(genericArgumentFactories: true)
-class ApiResponse<T> with _$ApiResponse<T> {
+abstract class ApiResponse<T> with _$ApiResponse<T> {
   const factory ApiResponse({
     required T data,
     required bool success,

@@ -4,7 +4,7 @@ part 'course.freezed.dart';
 part 'course.g.dart';
 
 @freezed
-class Course with _$Course {
+abstract class Course with _$Course {
   const factory Course({
     required String id,
     required String name,
@@ -27,7 +27,7 @@ class Course with _$Course {
 }
 
 @freezed
-class Category with _$Category {
+abstract class Category with _$Category {
   const factory Category({
     required String id,
     required String name,
@@ -39,7 +39,7 @@ class Category with _$Category {
 }
 
 @freezed
-class CourseProgress with _$CourseProgress {
+abstract class CourseProgress with _$CourseProgress {
   const factory CourseProgress({
     required String id,
     required String userId,
