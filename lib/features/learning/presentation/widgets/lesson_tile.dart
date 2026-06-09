@@ -147,6 +147,19 @@ class LessonTile extends StatelessWidget {
       );
     }
 
+    IconData getIconData() {
+      switch (lesson.contentType) {
+        case 'text':
+          return isSelected ? Icons.chrome_reader_mode : Icons.description_outlined;
+        case 'assignment':
+          return isSelected ? Icons.assignment_turned_in : Icons.assignment_outlined;
+        case 'quiz':
+          return isSelected ? Icons.quiz : Icons.quiz_outlined;
+        default:
+          return isSelected ? Icons.play_arrow : Icons.play_circle_outline;
+      }
+    }
+
     if (isSelected) {
       return Container(
         width: 36.w,
@@ -158,8 +171,8 @@ class LessonTile extends StatelessWidget {
           shape: BoxShape.circle,
         ),
         child: Icon(
-          Icons.play_arrow,
-          size: 20.sp,
+          getIconData(),
+          size: 18.sp,
           color: Colors.white,
         ),
       );
@@ -173,8 +186,8 @@ class LessonTile extends StatelessWidget {
         shape: BoxShape.circle,
       ),
       child: Icon(
-        Icons.play_circle_outline,
-        size: 20.sp,
+        getIconData(),
+        size: 18.sp,
         color: AppTheme.primaryColor,
       ),
     );

@@ -9,6 +9,8 @@ class VideoLesson {
   final int durationSeconds; // raw seconds
   final int orderIndex;
   final bool isWatched;
+  final String contentType; // 'video' | 'text' | 'quiz' | 'assignment'
+  final String? content;
 
   const VideoLesson({
     required this.id,
@@ -20,6 +22,8 @@ class VideoLesson {
     required this.durationSeconds,
     required this.orderIndex,
     this.isWatched = false,
+    this.contentType = 'video',
+    this.content,
   });
 
   factory VideoLesson.fromJson(Map<String, dynamic> json) {
@@ -30,13 +34,19 @@ class VideoLesson {
       description: json['description']?.toString(),
       videoUrl: json['video_url']?.toString() ?? '',
       thumbnailUrl: json['thumbnail_url']?.toString(),
-      durationSeconds: json['duration'] != null
-          ? int.parse(json['duration'].toString())
-          : 0,
-      orderIndex: json['order_index'] != null
-          ? int.parse(json['order_index'].toString())
-          : 0,
+      durationSeconds: json['video_duration'] != null
+          ? int.parse(json['video_duration'].toString())
+          : (json['duration'] != null
+              ? int.parse(json['duration'].toString())
+              : 0),
+      orderIndex: json['sort_order'] != null
+          ? int.parse(json['sort_order'].toString())
+          : (json['order_index'] != null
+              ? int.parse(json['order_index'].toString())
+              : 0),
       isWatched: json['is_watched'] == true,
+      contentType: json['content_type']?.toString() ?? 'video',
+      content: json['content']?.toString(),
     );
   }
 
@@ -48,7 +58,11 @@ class VideoLesson {
         '${seconds.toString().padLeft(2, '0')}';
   }
 
-  VideoLesson copyWith({bool? isWatched}) {
+  VideoLesson copyWith({
+    bool? isWatched,
+    String? contentType,
+    String? content,
+  }) {
     return VideoLesson(
       id: id,
       courseId: courseId,
@@ -59,6 +73,8 @@ class VideoLesson {
       durationSeconds: durationSeconds,
       orderIndex: orderIndex,
       isWatched: isWatched ?? this.isWatched,
+      contentType: contentType ?? this.contentType,
+      content: content ?? this.content,
     );
   }
 

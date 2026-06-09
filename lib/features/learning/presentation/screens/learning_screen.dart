@@ -161,7 +161,7 @@ class _EnrolledCourseCard extends ConsumerWidget {
                 children: [
                   CachedNetworkImage(
                     imageUrl: course.thumbnailUrl ??
-                        'https://via.placeholder.com/400x180',
+                        'https://placehold.co/400x180',
                     height: 160.h,
                     width: double.infinity,
                     fit: BoxFit.cover,

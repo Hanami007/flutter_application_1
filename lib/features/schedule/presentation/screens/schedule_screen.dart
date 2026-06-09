@@ -48,30 +48,62 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
     final userBookingsAsync = ref.watch(userBookingsProvider(userId));
     final classSessionsAsync = ref.watch(allClassSessionsProvider);
     final coursesAsync = ref.watch(allCoursesProvider);
+    final enrolledCoursesAsync = ref.watch(enrolledCoursesProvider);
 
     final bookings = userBookingsAsync.value ?? [];
     final classSessions = classSessionsAsync.value ?? [];
     final courses = coursesAsync.value ?? [];
+    final enrolledCourses = enrolledCoursesAsync.value ?? [];
 
-    // Collect all dates with bookings
-    final bookedDays = <DateTime>{};
+    // Collect all dates with bookings or class sessions of enrolled courses
+    final highlightedDays = <DateTime>{};
     for (final b in bookings) {
       if (b.bookingDate != null) {
-        bookedDays.add(DateTime(b.bookingDate!.year, b.bookingDate!.month, b.bookingDate!.day));
+        highlightedDays.add(DateTime(b.bookingDate!.year, b.bookingDate!.month, b.bookingDate!.day));
       }
+    }
+
+    final enrolledCourseIds = enrolledCourses.map((c) => c.id).toSet();
+    final enrolledClassSessions = classSessions.where((s) => enrolledCourseIds.contains(s.courseId)).toList();
+
+    for (final s in enrolledClassSessions) {
+      highlightedDays.add(DateTime(s.startTime.year, s.startTime.month, s.startTime.day));
     }
 
     final selectedDate = _selectedDay ?? DateTime.now();
     final normalizedSelectedDate = DateTime(selectedDate.year, selectedDate.month, selectedDate.day);
 
     // Filter bookings for the selected date
-    final filteredBookings = bookings.where((b) {
+    final selectedBookings = bookings.where((b) {
       if (b.bookingDate == null) return false;
       final normalizedBookingDate = DateTime(b.bookingDate!.year, b.bookingDate!.month, b.bookingDate!.day);
       return normalizedBookingDate == normalizedSelectedDate;
     }).toList();
 
-    final isLoading = userBookingsAsync.isLoading || classSessionsAsync.isLoading || coursesAsync.isLoading;
+    // Filter enrolled class sessions for the selected date
+    final selectedSessions = enrolledClassSessions.where((s) {
+      final normalizedSessionDate = DateTime(s.startTime.year, s.startTime.month, s.startTime.day);
+      return normalizedSessionDate == normalizedSelectedDate;
+    }).toList();
+
+    // Merge them into display items
+    final displayItems = <dynamic>[];
+    final bookedSessionIds = selectedBookings.map((b) => b.classSessionId).toSet();
+
+    // Add bookings first
+    displayItems.addAll(selectedBookings);
+
+    // Add enrolled class sessions that aren't already booked
+    for (final s in selectedSessions) {
+      if (!bookedSessionIds.contains(s.id)) {
+        displayItems.add(s);
+      }
+    }
+
+    final isLoading = userBookingsAsync.isLoading ||
+        classSessionsAsync.isLoading ||
+        coursesAsync.isLoading ||
+        enrolledCoursesAsync.isLoading;
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
@@ -103,8 +135,8 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
                   },
                   eventLoader: (day) {
                     final normalizedDay = DateTime(day.year, day.month, day.day);
-                    if (bookedDays.contains(normalizedDay)) {
-                      return ['booking'];
+                    if (highlightedDays.contains(normalizedDay)) {
+                      return ['event'];
                     }
                     return [];
                   },
@@ -146,7 +178,7 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
                   calendarBuilders: CalendarBuilders(
                     defaultBuilder: (context, day, focusedDay) {
                       final normalizedDay = DateTime(day.year, day.month, day.day);
-                      if (bookedDays.contains(normalizedDay)) {
+                      if (highlightedDays.contains(normalizedDay)) {
                         return Container(
                           margin: const EdgeInsets.all(4.0),
                           alignment: Alignment.center,
@@ -172,7 +204,7 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
                     },
                     outsideBuilder: (context, day, focusedDay) {
                       final normalizedDay = DateTime(day.year, day.month, day.day);
-                      if (bookedDays.contains(normalizedDay)) {
+                      if (highlightedDays.contains(normalizedDay)) {
                         return Container(
                           margin: const EdgeInsets.all(4.0),
                           alignment: Alignment.center,
@@ -201,7 +233,7 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
               ),
             ),
 
-            // Bookings Header for Selected Date
+            // Sessions Header for Selected Date
             Padding(
               padding: EdgeInsets.symmetric(horizontal: AppTheme.spacingMd, vertical: 12.h),
               child: Row(
@@ -209,7 +241,7 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
                 children: [
                   Expanded(
                     child: Text(
-                      'Bookings on ${_formatSelectedDate(selectedDate)}',
+                      'Schedule on ${_formatSelectedDate(selectedDate)}',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
@@ -217,9 +249,9 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  if (filteredBookings.isNotEmpty)
+                  if (displayItems.isNotEmpty)
                     Text(
-                      '${filteredBookings.length} session(s)',
+                      '${displayItems.length} session(s)',
                       style: TextStyle(
                         fontSize: 14.sp,
                         color: AppTheme.primaryColor,
@@ -235,7 +267,7 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
                 padding: EdgeInsets.symmetric(vertical: 48),
                 child: LoadingWidget(),
               )
-            else if (filteredBookings.isEmpty)
+            else if (displayItems.isEmpty)
               Padding(
                 padding: EdgeInsets.symmetric(vertical: 32.h),
                 child: Column(
@@ -247,7 +279,7 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
                     ),
                     SizedBox(height: 12.h),
                     Text(
-                      'No bookings on this day',
+                      'No sessions on this day',
                       style: Theme.of(context).textTheme.bodyLarge,
                     ),
                   ],
@@ -258,11 +290,11 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
                 physics: const NeverScrollableScrollPhysics(),
                 shrinkWrap: true,
                 padding: EdgeInsets.symmetric(horizontal: AppTheme.spacingMd),
-                itemCount: filteredBookings.length,
+                itemCount: displayItems.length,
                 itemBuilder: (context, index) {
                   return Padding(
                     padding: EdgeInsets.only(bottom: 12.h),
-                    child: _buildBookingCard(filteredBookings[index], classSessions, courses),
+                    child: _buildScheduleCard(displayItems[index], classSessions, courses),
                   );
                 },
               ),
@@ -270,6 +302,116 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
             SizedBox(height: 24.h),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildScheduleCard(
+    dynamic item,
+    List<ClassSession> classSessions,
+    List<Course> courses,
+  ) {
+    if (item is Booking) {
+      return _buildBookingCard(item, classSessions, courses);
+    }
+
+    final session = item as ClassSession;
+    final course = courses.where((c) => c.id == session.courseId).firstOrNull;
+
+    final courseName = course?.name ?? 'Live Class Session';
+    final sessionType = session.sessionType;
+    final startTime = session.startTime;
+    final endTime = session.endTime;
+
+    final timeStr = '${startTime.hour.toString().padLeft(2, '0')}:${startTime.minute.toString().padLeft(2, '0')} - '
+        '${endTime.hour.toString().padLeft(2, '0')}:${endTime.minute.toString().padLeft(2, '0')}';
+
+    final dateStr = _formatSelectedDate(startTime);
+
+    return Container(
+      padding: EdgeInsets.all(AppTheme.spacingMd),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+        color: AppTheme.surfaceColor,
+        boxShadow: AppTheme.softShadow,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      courseName,
+                      style: TextStyle(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.darkGrey,
+                      ),
+                    ),
+                    SizedBox(height: 4.h),
+                    Text(
+                      'Instructor • ${sessionType.toUpperCase()}',
+                      style: TextStyle(
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w400,
+                        color: AppTheme.mediumGrey,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: 12.w,
+                  vertical: 6.h,
+                ),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(AppTheme.radiusSm),
+                  color: AppTheme.primaryColor.withOpacity(0.1),
+                ),
+                child: Text(
+                  'UPCOMING',
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.primaryColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 12.h),
+          Row(
+            children: [
+              Icon(Icons.calendar_today, size: 16.sp, color: AppTheme.primaryColor),
+              SizedBox(width: 8.w),
+              Text(
+                dateStr,
+                style: TextStyle(
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w500,
+                  color: AppTheme.darkGrey,
+                ),
+              ),
+              SizedBox(width: 16.w),
+              Icon(Icons.access_time, size: 16.sp, color: AppTheme.primaryColor),
+              SizedBox(width: 8.w),
+              Text(
+                timeStr,
+                style: TextStyle(
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w500,
+                  color: AppTheme.darkGrey,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

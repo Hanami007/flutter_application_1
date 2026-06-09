@@ -112,7 +112,7 @@ class _CourseListScreenState extends ConsumerState<CourseListScreen> {
                   return Padding(
                     padding: EdgeInsets.only(bottom: 12.h),
                     child: CourseCard(
-                      thumbnail: course.thumbnailUrl ?? 'https://via.placeholder.com/300x200',
+                      thumbnail: course.thumbnailUrl ?? 'https://placehold.co/300x200',
                       courseName: course.name,
                       instructor: 'Instructor',
                       rating: course.rating,

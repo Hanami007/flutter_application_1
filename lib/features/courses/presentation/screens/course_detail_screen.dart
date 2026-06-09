@@ -78,7 +78,7 @@ class _CourseDetailBody extends ConsumerWidget {
                 children: [
                   CachedNetworkImage(
                     imageUrl: course.thumbnailUrl ??
-                        'https://via.placeholder.com/600x300',
+                        'https://placehold.co/600x300',
                     fit: BoxFit.cover,
                     errorWidget: (_, __, ___) => Container(
                       color: AppTheme.veryLightGrey,
