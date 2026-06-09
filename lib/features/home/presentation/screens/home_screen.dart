@@ -3,6 +3,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:learn_hub/core/theme/app_theme.dart';
+import 'package:learn_hub/shared/constants/app_strings.dart';
+import 'package:learn_hub/shared/widgets/common_widgets.dart';
 
 // ─── Color Palette ───────────────────────────────────────────────────────────
 const _teal = Color(0xFF2DC9A8);
@@ -587,9 +590,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _buildUpcomingClassesSection(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: AppTheme.spacingMd),
+  Widget _buildReviewCard(_ReviewItem review) {
+    return Container(
+      width: 220.w,
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: _cardBg,
+        borderRadius: BorderRadius.circular(18.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -616,6 +631,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   children: [
                     Text(
                       review.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.notoSansThai(
                         fontSize: 13.sp,
                         fontWeight: FontWeight.w700,
@@ -636,7 +653,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
             ],
           ),
-          SizedBox(height: 10.h),
+          SizedBox(height: 12.h),
           // Stars
           Row(
             children: List.generate(5, (i) {
@@ -653,15 +670,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
           SizedBox(height: 10.h),
           // Review text
-          Text(
-            review.review,
-            maxLines: 3,
-            overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.notoSansThai(
-              fontSize: 12.sp,
-              fontWeight: FontWeight.w400,
-              color: _textDark,
-              height: 1.5,
+          Expanded(
+            child: Text(
+              review.review,
+              maxLines: 4,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.notoSansThai(
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w400,
+                color: _textDark,
+                height: 1.5,
+              ),
             ),
           ),
         ],

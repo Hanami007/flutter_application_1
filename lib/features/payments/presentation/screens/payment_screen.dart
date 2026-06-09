@@ -10,6 +10,9 @@ import 'package:image_picker/image_picker.dart';
 import 'package:dotted_border/dotted_border.dart';
 import '../../../booking/domain/providers/booking_provider.dart';
 import '../../../enrollment/domain/providers/enrollment_provider.dart';
+import '../../../notifications/domain/entities/app_notification.dart';
+import '../../../notifications/domain/providers/notification_provider.dart';
+import '../../../courses/domain/providers/course_provider.dart';
 
 class PaymentScreen extends ConsumerStatefulWidget {
   final String courseId;
@@ -117,6 +120,10 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final courseAsync = ref.watch(courseDetailsProvider(widget.courseId));
+    final course = courseAsync.valueOrNull;
+    final courseName = course?.name ?? 'Course';
+
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
@@ -224,6 +231,19 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
               amount: 5999.0, // Match the total amount
               paymentMethod: selectedPaymentMethod,
               transactionId: _transactionIdController.text.trim(),
+            );
+
+            // Add notifications for purchase
+            ref.read(notificationProvider.notifier).add(
+              AppNotification.paymentSuccess(
+                courseName: courseName,
+                amount: 5999.0,
+              ),
+            );
+            ref.read(notificationProvider.notifier).add(
+              AppNotification.enrollmentConfirmed(
+                courseName: courseName,
+              ),
             );
 
             if (mounted) {
