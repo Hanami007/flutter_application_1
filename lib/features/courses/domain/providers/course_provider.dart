@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart' as supabase_core;
 import '../../domain/entities/course.dart';
 import '../../data/mock_course_data.dart';
 import '../../../../core/constants/app_constants.dart';
+import 'package:flutter/foundation.dart' hide Category;
 
 // Courses Repository Provider
 final courseRepositoryProvider = Provider((ref) {
@@ -25,6 +26,12 @@ final popularCoursesProvider = FutureProvider<List<Course>>((ref) async {
 final courseDetailsProvider = FutureProvider.family<Course, String>((ref, courseId) async {
   final repository = ref.watch(courseRepositoryProvider);
   return repository.getCourseById(courseId);
+});
+
+// All Reviews Provider
+final allReviewsProvider = FutureProvider<List<ReviewModel>>((ref) async {
+  final repository = ref.watch(courseRepositoryProvider);
+  return repository.getAllReviews();
 });
 
 // Categories Provider
@@ -163,5 +170,68 @@ class CourseRepository {
       }
     }
     return MockCourseData.mockCourses.where((c) => c.categoryId == categoryId).toList();
+  }
+
+  Future<void> submitRating({
+    required String userId,
+    required String courseId,
+    required double rating,
+    required String reviewText,
+  }) async {
+    if (_isSupabaseActive) {
+      try {
+        final data = {
+          'user_id': userId,
+          'course_id': courseId,
+          'rating': rating,
+          'review': reviewText,
+        };
+        debugPrint('Submitting rating payload to Supabase: $data');
+        await supabase_core.Supabase.instance.client
+            .from('ratings')
+            .upsert(data, onConflict: 'user_id,course_id');
+        debugPrint('Rating submitted successfully!');
+        return;
+      } catch (e) {
+        debugPrint('submitRating supabase error: $e');
+      }
+    }
+    debugPrint('Mock: saved rating $rating for course $courseId by user $userId: "$reviewText"');
+  }
+
+  Future<List<ReviewModel>> getAllReviews() async {
+    if (_isSupabaseActive) {
+      try {
+        final response = await supabase_core.Supabase.instance.client
+            .from('ratings')
+            .select('*, users(full_name), courses(name)')
+            .order('created_at', ascending: false);
+            
+        return (response as List).map((json) {
+          final dbMap = Map<String, dynamic>.from(json as Map);
+          
+          final userName = dbMap['users'] != null 
+              ? dbMap['users']['full_name']?.toString() 
+              : 'Anonymous';
+          final courseName = dbMap['courses'] != null 
+              ? dbMap['courses']['name']?.toString() 
+              : 'Course';
+              
+          return ReviewModel(
+            id: dbMap['id']?.toString() ?? '',
+            userName: userName ?? 'Anonymous',
+            courseName: courseName ?? 'Course',
+            rating: dbMap['rating'] != null ? double.parse(dbMap['rating'].toString()) : 5.0,
+            review: dbMap['review']?.toString() ?? '',
+            createdAt: dbMap['created_at'] != null 
+                ? DateTime.parse(dbMap['created_at'].toString()) 
+                : DateTime.now(),
+          );
+        }).toList();
+      } catch (e) {
+        debugPrint('getAllReviews supabase error: $e');
+      }
+    }
+    return [];
   }
 }

@@ -6,6 +6,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:learn_hub/core/theme/app_theme.dart';
 import 'package:learn_hub/shared/constants/app_strings.dart';
 import 'package:learn_hub/shared/widgets/common_widgets.dart';
+import 'package:learn_hub/features/courses/domain/providers/course_provider.dart';
+import 'package:learn_hub/features/courses/domain/entities/course.dart';
 
 // ─── Color Palette ───────────────────────────────────────────────────────────
 const _teal = Color(0xFF2DC9A8);
@@ -121,6 +123,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final reviewsAsync = ref.watch(allReviewsProvider);
+    final dbReviews = reviewsAsync.value ?? [];
+
+    final dbReviewItems = dbReviews.map((r) {
+      final colors = [
+        [const Color(0xFFE6F9F5), const Color(0xFF2DC9A8)],
+        [const Color(0xFFF2EEFF), const Color(0xFFAB94F0)],
+        [const Color(0xFFFFF3E8), const Color(0xFFFF9F50)],
+        [const Color(0xFFFFEDF5), const Color(0xFFFF7EB3)],
+        [const Color(0xFFEEF4FF), const Color(0xFF5B9CF6)],
+      ];
+      final colorSet = colors[r.id.hashCode % colors.length];
+      
+      return _ReviewItem(
+        name: r.userName,
+        category: r.courseName.toUpperCase(),
+        rating: r.rating.toInt(),
+        review: r.review.isNotEmpty ? '"${r.review}"' : '"ให้คะแนน ${r.rating} ดาว"',
+        avatarColor: colorSet[0],
+        avatarIconColor: colorSet[1],
+      );
+    }).toList();
+
+    final allReviews = [...dbReviewItems, ..._reviews];
+
     return Scaffold(
       backgroundColor: _bgColor,
       body: SafeArea(
@@ -138,7 +165,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               SizedBox(height: 28.h),
               _buildRecommendedSection(),
               SizedBox(height: 28.h),
-              _buildReviewsSection(),
+              _buildReviewsSection(allReviews),
               SizedBox(height: 24.h),
             ],
           ),
@@ -491,7 +518,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   // ─── Reviews Section ──────────────────────────────────────────────────────
-  Widget _buildReviewsSection() {
+  Widget _buildReviewsSection(List<_ReviewItem> allReviews) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -513,10 +540,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
             padding: EdgeInsets.symmetric(horizontal: 20.w),
-            itemCount: _reviews.length,
+            itemCount: allReviews.length,
             separatorBuilder: (_, i) => SizedBox(width: 14.w),
             itemBuilder: (context, index) =>
-                _buildReviewCard(_reviews[index]),
+                _buildReviewCard(allReviews[index]),
           ),
         ),
       ],

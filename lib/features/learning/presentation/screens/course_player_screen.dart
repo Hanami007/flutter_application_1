@@ -14,6 +14,8 @@ import '../../domain/providers/learning_provider.dart';
 import '../widgets/lesson_tile.dart';
 import '../widgets/completion_banner.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../notifications/domain/entities/app_notification.dart';
+import '../../../notifications/domain/providers/notification_provider.dart';
 
 /// Full course learning screen with video player, lesson list, and progress tracking.
 class CoursePlayerScreen extends ConsumerStatefulWidget {
@@ -310,7 +312,7 @@ class _CoursePlayerScreenState extends ConsumerState<CoursePlayerScreen>
                   ),
                 );
               },
-              onReviewCourse: () => context.pop(),
+              onReviewCourse: () => _showReviewDialog(context, course.name),
             ),
 
           // Tabs
@@ -1201,5 +1203,165 @@ class _CoursePlayerScreenState extends ConsumerState<CoursePlayerScreen>
         );
       },
     );
+  }
+
+  void _showReviewDialog(BuildContext context, String courseName) {
+    int selectedRating = 5;
+    final textController = TextEditingController();
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+              ),
+              backgroundColor: AppTheme.surfaceColor,
+              title: Column(
+                children: [
+                  Icon(Icons.rate_review_rounded, size: 48.sp, color: AppTheme.primaryColor),
+                  SizedBox(height: 12.h),
+                  Text(
+                    'ให้คะแนนและรีวิวคอร์สเรียน',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.darkGrey,
+                    ),
+                  ),
+                  SizedBox(height: 4.h),
+                  Text(
+                    courseName,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 13.sp,
+                      color: AppTheme.mediumGrey,
+                    ),
+                  ),
+                ],
+              ),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Star Rating selector
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(5, (index) {
+                        final starValue = index + 1;
+                        final isSelected = starValue <= selectedRating;
+                        return IconButton(
+                          icon: Icon(
+                            isSelected ? Icons.star_rounded : Icons.star_outline_rounded,
+                            size: 36.sp,
+                            color: isSelected ? const Color(0xFFFFC107) : AppTheme.mediumGrey,
+                          ),
+                          onPressed: () {
+                            setDialogState(() {
+                              selectedRating = starValue;
+                            });
+                          },
+                        );
+                      }),
+                    ),
+                    SizedBox(height: 16.h),
+                    // Review comment text area
+                    TextField(
+                      controller: textController,
+                      maxLines: 4,
+                      maxLength: 200,
+                      decoration: InputDecoration(
+                        hintText: 'เขียนรีวิวเกี่ยวกับบทเรียนนี้...',
+                        hintStyle: TextStyle(color: AppTheme.mediumGrey, fontSize: 13.sp),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                          borderSide: BorderSide(color: AppTheme.lightGrey),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                          borderSide: BorderSide(color: AppTheme.primaryColor, width: 1.5),
+                        ),
+                        filled: true,
+                        fillColor: AppTheme.veryLightGrey,
+                      ),
+                      style: TextStyle(color: AppTheme.darkGrey, fontSize: 14.sp),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(
+                    'ยกเลิก',
+                    style: TextStyle(color: AppTheme.mediumGrey),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    final reviewText = textController.text.trim();
+                    Navigator.pop(context);
+                    _submitReview(courseName, selectedRating, reviewText);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primaryColor,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                    ),
+                  ),
+                  child: const Text('ส่งรีวิว'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _submitReview(String courseName, int rating, String reviewText) async {
+    final userId = ref.read(currentUserIdProvider);
+
+    // Save to Supabase ratings table
+    await ref.read(courseRepositoryProvider).submitRating(
+          userId: userId,
+          courseId: widget.courseId,
+          rating: rating.toDouble(),
+          reviewText: reviewText,
+        );
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('⭐ ขอบคุณสำหรับรีวิว $rating ดาว และข้อเสนอแนะของคุณ!'),
+          backgroundColor: AppTheme.successColor,
+        ),
+      );
+    }
+
+    final reviewMessage = reviewText.isNotEmpty
+        ? 'คุณได้รีวิวคอร์ส "$courseName" ให้ $rating ดาว: "$reviewText"'
+        : 'คุณได้รีวิวคอร์ส "$courseName" ให้ $rating ดาวเรียบร้อยแล้ว';
+        
+    ref.read(notificationProvider.notifier).add(
+      AppNotification(
+        id: 'review_${widget.courseId}_${DateTime.now().millisecondsSinceEpoch}',
+        title: '⭐ รีวิวคอร์สสำเร็จ',
+        message: reviewMessage,
+        type: NotificationType.system,
+        createdAt: DateTime.now(),
+      ),
+    );
+    
+    if (mounted) {
+      context.pop();
+    }
   }
 }

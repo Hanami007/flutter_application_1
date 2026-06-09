@@ -51,3 +51,34 @@ class CourseProgress with _$CourseProgress {
   factory CourseProgress.fromJson(Map<String, dynamic> json) => 
       _$CourseProgressFromJson(json);
 }
+
+class ReviewModel {
+  final String id;
+  final String userName;
+  final String courseName;
+  final double rating;
+  final String review;
+  final DateTime createdAt;
+
+  ReviewModel({
+    required this.id,
+    required this.userName,
+    required this.courseName,
+    required this.rating,
+    required this.review,
+    required this.createdAt,
+  });
+
+  factory ReviewModel.fromJson(Map<String, dynamic> json) {
+    return ReviewModel(
+      id: json['id']?.toString() ?? '',
+      userName: json['userName']?.toString() ?? json['user_name']?.toString() ?? '',
+      courseName: json['courseName']?.toString() ?? json['course_name']?.toString() ?? '',
+      rating: json['rating'] != null ? double.parse(json['rating'].toString()) : 5.0,
+      review: json['review']?.toString() ?? '',
+      createdAt: json['created_at'] != null 
+          ? DateTime.parse(json['created_at'].toString()) 
+          : DateTime.now(),
+    );
+  }
+}
