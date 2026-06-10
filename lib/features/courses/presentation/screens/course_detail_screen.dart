@@ -246,21 +246,10 @@ class _CourseDetailBody extends ConsumerWidget {
                     ),
                   ),
                   SizedBox(height: 12.h),
-<<<<<<< HEAD
                   _buildLearnPoint('เข้าใจแนวคิดพื้นฐานและเครื่องมือที่สำคัญทั้งหมด'),
                   _buildLearnPoint('ฝึกทำโปรเจกต์จริงเพื่อนำไปต่อยอดทำงานได้จริง'),
                   _buildLearnPoint('รับใบประกาศนียบัตรเมื่อเรียนจบหลักสูตร'),
                   _buildLearnPoint('รับสิทธิ์เข้าร่วมกลุ่มผู้เรียนเพื่อแลกเปลี่ยนความรู้'),
-=======
-                  if (course.whatYouWillLearn != null && course.whatYouWillLearn!.isNotEmpty)
-                    ...course.whatYouWillLearn!.map((point) => _buildLearnPoint(point))
-                  else ...[
-                    _buildLearnPoint('Master the core concepts and tools'),
-                    _buildLearnPoint('Build real-world projects'),
-                    _buildLearnPoint('Get industry-recognized certification'),
-                    _buildLearnPoint('Join our community of 1,500+ learners'),
-                  ],
->>>>>>> da955614eb1b9c1286d32a93be72ed105c6a00d0
 
                   SizedBox(height: 24.h),
 
@@ -274,17 +263,8 @@ class _CourseDetailBody extends ConsumerWidget {
                     ),
                   ),
                   SizedBox(height: 12.h),
-<<<<<<< HEAD
                   _buildRequirement('ความรู้พื้นฐานเกี่ยวกับการใช้คอมพิวเตอร์ทั่วไป'),
                   _buildRequirement('มีความพร้อมและความตั้งใจในการเรียนรู้สิ่งใหม่'),
-=======
-                  if (course.requirements != null && course.requirements!.isNotEmpty)
-                    ...course.requirements!.map((req) => _buildRequirement(req))
-                  else ...[
-                    _buildRequirement('Basic computer knowledge'),
-                    _buildRequirement('A passion for learning'),
-                  ],
->>>>>>> da955614eb1b9c1286d32a93be72ed105c6a00d0
 
                   SizedBox(height: 32.h),
                 ],
