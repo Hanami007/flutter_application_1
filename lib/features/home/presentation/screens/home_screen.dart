@@ -8,6 +8,7 @@ import 'package:learn_hub/shared/constants/app_strings.dart';
 import 'package:learn_hub/shared/widgets/common_widgets.dart';
 import 'package:learn_hub/features/courses/domain/providers/course_provider.dart';
 import 'package:learn_hub/features/courses/domain/entities/course.dart';
+import 'package:learn_hub/features/notifications/presentation/widgets/notification_dropdown_button.dart';
 
 // ─── Color Palette ───────────────────────────────────────────────────────────
 const _teal = Color(0xFF2DC9A8);
@@ -205,11 +206,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           const Spacer(),
           _TopIconButton(icon: Icons.shopping_cart_outlined, onTap: () {}),
           SizedBox(width: 6.w),
-          _TopIconButton(
-            icon: Icons.notifications_outlined,
-            hasBadge: true,
-            onTap: () => context.go('/home/notifications'),
-          ),
+          const NotificationDropdownButton(),
         ],
       ),
     );

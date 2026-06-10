@@ -7,8 +7,8 @@ import '../../../../shared/constants/app_strings.dart';
 import '../../../../shared/widgets/common_widgets.dart';
 import '../../../courses/domain/providers/course_provider.dart';
 import '../../../enrollment/domain/providers/enrollment_provider.dart';
-
 import '../../domain/entities/course.dart';
+import 'package:learn_hub/features/notifications/presentation/widgets/notification_dropdown_button.dart';
 
 class CourseListScreen extends ConsumerStatefulWidget {
   const CourseListScreen({Key? key}) : super(key: key);
@@ -55,11 +55,7 @@ class _CourseListScreenState extends ConsumerState<CourseListScreen> {
           const Spacer(),
           _TopIconButton(icon: Icons.shopping_cart_outlined, onTap: () {}),
           SizedBox(width: 6.w),
-          _TopIconButton(
-            icon: Icons.notifications_outlined,
-            hasBadge: true,
-            onTap: () => context.go('/home/notifications'),
-          ),
+          const NotificationDropdownButton(),
         ],
       ),
     );
