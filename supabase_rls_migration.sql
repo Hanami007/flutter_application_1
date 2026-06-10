@@ -103,4 +103,9 @@ CREATE POLICY "anon_all_payments" ON payments FOR ALL USING (true) WITH CHECK (t
 DROP POLICY IF EXISTS "anon_all_sessions" ON class_sessions;
 CREATE POLICY "anon_all_sessions" ON class_sessions FOR ALL USING (true) WITH CHECK (true);
 
+-- ─── Step 8: ratings table RLS ─────────────────────────────────
+ALTER TABLE ratings ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "anon_all_ratings" ON ratings;
+CREATE POLICY "anon_all_ratings" ON ratings FOR ALL USING (true) WITH CHECK (true);
+
 

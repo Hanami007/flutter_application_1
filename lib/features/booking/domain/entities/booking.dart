@@ -4,7 +4,7 @@ part 'booking.freezed.dart';
 part 'booking.g.dart';
 
 @freezed
-class Booking with _$Booking {
+abstract class Booking with _$Booking {
   const factory Booking({
     required String id,
     required String userId,
@@ -20,7 +20,7 @@ class Booking with _$Booking {
 }
 
 @freezed
-class ClassSession with _$ClassSession {
+abstract class ClassSession with _$ClassSession {
   const factory ClassSession({
     required String id,
     required String courseId,
@@ -41,7 +41,7 @@ class ClassSession with _$ClassSession {
 }
 
 @freezed
-class Branch with _$Branch {
+abstract class Branch with _$Branch {
   const factory Branch({
     required String id,
     required String name,

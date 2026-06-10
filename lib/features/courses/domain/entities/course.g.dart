@@ -6,7 +6,7 @@ part of 'course.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$CourseImpl _$$CourseImplFromJson(Map<String, dynamic> json) => _$CourseImpl(
+_Course _$CourseFromJson(Map<String, dynamic> json) => _Course(
   id: json['id'] as String,
   name: json['name'] as String,
   description: json['description'] as String,
@@ -18,6 +18,12 @@ _$CourseImpl _$$CourseImplFromJson(Map<String, dynamic> json) => _$CourseImpl(
   level: json['level'] as String,
   rating: (json['rating'] as num?)?.toDouble() ?? 0.0,
   totalStudents: (json['totalStudents'] as num?)?.toInt() ?? 0,
+  whatYouWillLearn: (json['whatYouWillLearn'] as List<dynamic>?)
+      ?.map((e) => e as String)
+      .toList(),
+  requirements: (json['requirements'] as List<dynamic>?)
+      ?.map((e) => e as String)
+      .toList(),
   createdAt: json['createdAt'] == null
       ? null
       : DateTime.parse(json['createdAt'] as String),
@@ -26,41 +32,40 @@ _$CourseImpl _$$CourseImplFromJson(Map<String, dynamic> json) => _$CourseImpl(
       : DateTime.parse(json['updatedAt'] as String),
 );
 
-Map<String, dynamic> _$$CourseImplToJson(_$CourseImpl instance) =>
-    <String, dynamic>{
-      'id': instance.id,
-      'name': instance.name,
-      'description': instance.description,
-      'categoryId': instance.categoryId,
-      'instructorId': instance.instructorId,
-      'thumbnailUrl': instance.thumbnailUrl,
-      'price': instance.price,
-      'duration': instance.duration,
-      'level': instance.level,
-      'rating': instance.rating,
-      'totalStudents': instance.totalStudents,
-      'createdAt': instance.createdAt?.toIso8601String(),
-      'updatedAt': instance.updatedAt?.toIso8601String(),
-    };
+Map<String, dynamic> _$CourseToJson(_Course instance) => <String, dynamic>{
+  'id': instance.id,
+  'name': instance.name,
+  'description': instance.description,
+  'categoryId': instance.categoryId,
+  'instructorId': instance.instructorId,
+  'thumbnailUrl': instance.thumbnailUrl,
+  'price': instance.price,
+  'duration': instance.duration,
+  'level': instance.level,
+  'rating': instance.rating,
+  'totalStudents': instance.totalStudents,
+  'whatYouWillLearn': instance.whatYouWillLearn,
+  'requirements': instance.requirements,
+  'createdAt': instance.createdAt?.toIso8601String(),
+  'updatedAt': instance.updatedAt?.toIso8601String(),
+};
 
-_$CategoryImpl _$$CategoryImplFromJson(Map<String, dynamic> json) =>
-    _$CategoryImpl(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      description: json['description'] as String?,
-      iconUrl: json['iconUrl'] as String?,
-    );
+_Category _$CategoryFromJson(Map<String, dynamic> json) => _Category(
+  id: json['id'] as String,
+  name: json['name'] as String,
+  description: json['description'] as String?,
+  iconUrl: json['iconUrl'] as String?,
+);
 
-Map<String, dynamic> _$$CategoryImplToJson(_$CategoryImpl instance) =>
-    <String, dynamic>{
-      'id': instance.id,
-      'name': instance.name,
-      'description': instance.description,
-      'iconUrl': instance.iconUrl,
-    };
+Map<String, dynamic> _$CategoryToJson(_Category instance) => <String, dynamic>{
+  'id': instance.id,
+  'name': instance.name,
+  'description': instance.description,
+  'iconUrl': instance.iconUrl,
+};
 
-_$CourseProgressImpl _$$CourseProgressImplFromJson(Map<String, dynamic> json) =>
-    _$CourseProgressImpl(
+_CourseProgress _$CourseProgressFromJson(Map<String, dynamic> json) =>
+    _CourseProgress(
       id: json['id'] as String,
       userId: json['userId'] as String,
       courseId: json['courseId'] as String,
@@ -73,14 +78,13 @@ _$CourseProgressImpl _$$CourseProgressImplFromJson(Map<String, dynamic> json) =>
           : DateTime.parse(json['completedAt'] as String),
     );
 
-Map<String, dynamic> _$$CourseProgressImplToJson(
-  _$CourseProgressImpl instance,
-) => <String, dynamic>{
-  'id': instance.id,
-  'userId': instance.userId,
-  'courseId': instance.courseId,
-  'videosWatched': instance.videosWatched,
-  'videosTotal': instance.videosTotal,
-  'progressPercentage': instance.progressPercentage,
-  'completedAt': instance.completedAt?.toIso8601String(),
-};
+Map<String, dynamic> _$CourseProgressToJson(_CourseProgress instance) =>
+    <String, dynamic>{
+      'id': instance.id,
+      'userId': instance.userId,
+      'courseId': instance.courseId,
+      'videosWatched': instance.videosWatched,
+      'videosTotal': instance.videosTotal,
+      'progressPercentage': instance.progressPercentage,
+      'completedAt': instance.completedAt?.toIso8601String(),
+    };

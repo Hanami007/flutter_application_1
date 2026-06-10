@@ -6,38 +6,36 @@ part of 'booking.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$BookingImpl _$$BookingImplFromJson(Map<String, dynamic> json) =>
-    _$BookingImpl(
-      id: json['id'] as String,
-      userId: json['userId'] as String,
-      classSessionId: json['classSessionId'] as String,
-      status: json['status'] as String? ?? 'confirmed',
-      attendanceStatus: json['attendanceStatus'] as String?,
-      bookingDate: json['bookingDate'] == null
-          ? null
-          : DateTime.parse(json['bookingDate'] as String),
-      createdAt: json['createdAt'] == null
-          ? null
-          : DateTime.parse(json['createdAt'] as String),
-      updatedAt: json['updatedAt'] == null
-          ? null
-          : DateTime.parse(json['updatedAt'] as String),
-    );
+_Booking _$BookingFromJson(Map<String, dynamic> json) => _Booking(
+  id: json['id'] as String,
+  userId: json['userId'] as String,
+  classSessionId: json['classSessionId'] as String,
+  status: json['status'] as String? ?? 'confirmed',
+  attendanceStatus: json['attendanceStatus'] as String?,
+  bookingDate: json['bookingDate'] == null
+      ? null
+      : DateTime.parse(json['bookingDate'] as String),
+  createdAt: json['createdAt'] == null
+      ? null
+      : DateTime.parse(json['createdAt'] as String),
+  updatedAt: json['updatedAt'] == null
+      ? null
+      : DateTime.parse(json['updatedAt'] as String),
+);
 
-Map<String, dynamic> _$$BookingImplToJson(_$BookingImpl instance) =>
-    <String, dynamic>{
-      'id': instance.id,
-      'userId': instance.userId,
-      'classSessionId': instance.classSessionId,
-      'status': instance.status,
-      'attendanceStatus': instance.attendanceStatus,
-      'bookingDate': instance.bookingDate?.toIso8601String(),
-      'createdAt': instance.createdAt?.toIso8601String(),
-      'updatedAt': instance.updatedAt?.toIso8601String(),
-    };
+Map<String, dynamic> _$BookingToJson(_Booking instance) => <String, dynamic>{
+  'id': instance.id,
+  'userId': instance.userId,
+  'classSessionId': instance.classSessionId,
+  'status': instance.status,
+  'attendanceStatus': instance.attendanceStatus,
+  'bookingDate': instance.bookingDate?.toIso8601String(),
+  'createdAt': instance.createdAt?.toIso8601String(),
+  'updatedAt': instance.updatedAt?.toIso8601String(),
+};
 
-_$ClassSessionImpl _$$ClassSessionImplFromJson(Map<String, dynamic> json) =>
-    _$ClassSessionImpl(
+_ClassSession _$ClassSessionFromJson(Map<String, dynamic> json) =>
+    _ClassSession(
       id: json['id'] as String,
       courseId: json['courseId'] as String,
       branchId: json['branchId'] as String?,
@@ -52,7 +50,7 @@ _$ClassSessionImpl _$$ClassSessionImplFromJson(Map<String, dynamic> json) =>
       meetingLink: json['meetingLink'] as String?,
     );
 
-Map<String, dynamic> _$$ClassSessionImplToJson(_$ClassSessionImpl instance) =>
+Map<String, dynamic> _$ClassSessionToJson(_ClassSession instance) =>
     <String, dynamic>{
       'id': instance.id,
       'courseId': instance.courseId,
@@ -68,7 +66,7 @@ Map<String, dynamic> _$$ClassSessionImplToJson(_$ClassSessionImpl instance) =>
       'meetingLink': instance.meetingLink,
     };
 
-_$BranchImpl _$$BranchImplFromJson(Map<String, dynamic> json) => _$BranchImpl(
+_Branch _$BranchFromJson(Map<String, dynamic> json) => _Branch(
   id: json['id'] as String,
   name: json['name'] as String,
   address: json['address'] as String,
@@ -81,16 +79,15 @@ _$BranchImpl _$$BranchImplFromJson(Map<String, dynamic> json) => _$BranchImpl(
   capacity: (json['capacity'] as num?)?.toInt(),
 );
 
-Map<String, dynamic> _$$BranchImplToJson(_$BranchImpl instance) =>
-    <String, dynamic>{
-      'id': instance.id,
-      'name': instance.name,
-      'address': instance.address,
-      'city': instance.city,
-      'state': instance.state,
-      'zipCode': instance.zipCode,
-      'phone': instance.phone,
-      'latitude': instance.latitude,
-      'longitude': instance.longitude,
-      'capacity': instance.capacity,
-    };
+Map<String, dynamic> _$BranchToJson(_Branch instance) => <String, dynamic>{
+  'id': instance.id,
+  'name': instance.name,
+  'address': instance.address,
+  'city': instance.city,
+  'state': instance.state,
+  'zipCode': instance.zipCode,
+  'phone': instance.phone,
+  'latitude': instance.latitude,
+  'longitude': instance.longitude,
+  'capacity': instance.capacity,
+};

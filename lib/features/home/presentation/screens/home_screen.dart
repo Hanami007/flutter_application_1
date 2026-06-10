@@ -3,6 +3,11 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:learn_hub/core/theme/app_theme.dart';
+import 'package:learn_hub/shared/constants/app_strings.dart';
+import 'package:learn_hub/shared/widgets/common_widgets.dart';
+import 'package:learn_hub/features/courses/domain/providers/course_provider.dart';
+import 'package:learn_hub/features/courses/domain/entities/course.dart';
 
 // ─── Color Palette ───────────────────────────────────────────────────────────
 const _teal = Color(0xFF2DC9A8);
@@ -117,6 +122,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final reviewsAsync = ref.watch(allReviewsProvider);
+    final dbReviews = reviewsAsync.value ?? [];
+
+    final dbReviewItems = dbReviews.map((r) {
+      final colors = [
+        [const Color(0xFFE6F9F5), const Color(0xFF2DC9A8)],
+        [const Color(0xFFF2EEFF), const Color(0xFFAB94F0)],
+        [const Color(0xFFFFF3E8), const Color(0xFFFF9F50)],
+        [const Color(0xFFFFEDF5), const Color(0xFFFF7EB3)],
+        [const Color(0xFFEEF4FF), const Color(0xFF5B9CF6)],
+      ];
+      final colorSet = colors[r.id.hashCode % colors.length];
+      
+      return _ReviewItem(
+        name: r.userName,
+        category: r.courseName.toUpperCase(),
+        rating: r.rating.toInt(),
+        review: r.review.isNotEmpty ? '"${r.review}"' : '"ให้คะแนน ${r.rating} ดาว"',
+        avatarColor: colorSet[0],
+        avatarIconColor: colorSet[1],
+      );
+    }).toList();
+
+    final allReviews = [...dbReviewItems, ..._reviews];
+
     return Scaffold(
       backgroundColor: _bgColor,
       body: SafeArea(
@@ -134,7 +164,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               SizedBox(height: 28.h),
               _buildRecommendedSection(),
               SizedBox(height: 28.h),
-              _buildReviewsSection(),
+              _buildReviewsSection(allReviews),
               SizedBox(height: 24.h),
             ],
           ),
@@ -486,7 +516,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   // ─── Reviews Section ──────────────────────────────────────────────────────
-  Widget _buildReviewsSection() {
+  Widget _buildReviewsSection(List<_ReviewItem> allReviews) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -508,28 +538,95 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
             padding: EdgeInsets.symmetric(horizontal: 20.w),
-            itemCount: _reviews.length,
+            itemCount: allReviews.length,
             separatorBuilder: (_, i) => SizedBox(width: 14.w),
             itemBuilder: (context, index) =>
-                _buildReviewCard(_reviews[index]),
+                _buildReviewCard(allReviews[index]),
           ),
         ),
       ],
     );
   }
 
+  Widget _buildPopularCoursesSection(
+    BuildContext context,
+    AsyncValue popularCoursesAsync,
+    Set<String> enrolledIds,
+  ) {
+    return popularCoursesAsync.when(
+      data: (courses) => Padding(
+        padding: EdgeInsets.symmetric(horizontal: AppTheme.spacingMd),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    AppStrings.popularCourses,
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () => context.go('/home/courses'),
+                  child: Text(
+                    AppStrings.viewAll,
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.primaryColor,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 12.h),
+            ListView.builder(
+              physics: const NeverScrollableScrollPhysics(),
+              shrinkWrap: true,
+              itemCount: courses.length > 3 ? 3 : courses.length,
+              itemBuilder: (context, index) {
+                final course = courses[index];
+                final enrolled = enrolledIds.contains(course.id);
+                return Padding(
+                  padding: EdgeInsets.only(bottom: 12.h),
+                  child: CourseCard(
+                    thumbnail: course.thumbnailUrl ?? 'https://via.placeholder.com/300x200',
+                    courseName: course.name,
+                    instructor: 'Instructor',
+                    rating: course.rating,
+                    students: course.totalStudents,
+                    price: '฿${course.price.toStringAsFixed(0)}',
+                    isEnrolled: enrolled,
+                    onTap: () => context.go('/home/courses/${course.id}'),
+                    onBook: enrolled
+                        ? () => context.go('/home/learning/${course.id}')
+                        : () => context.go('/home/courses/${course.id}'),
+                  ),
+                );
+              },
+            ),
+            SizedBox(height: 24.h),
+          ],
+        ),
+      ),
+      loading: () => LoadingWidget(),
+      error: (error, stack) => Text(error.toString()),
+    );
+  }
+
   Widget _buildReviewCard(_ReviewItem review) {
     return Container(
-      width: 200.w,
-      padding: EdgeInsets.all(14.w),
+      width: 220.w,
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: _cardBg,
         borderRadius: BorderRadius.circular(18.r),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 14,
-            offset: const Offset(0, 4),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
@@ -559,6 +656,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   children: [
                     Text(
                       review.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.notoSansThai(
                         fontSize: 13.sp,
                         fontWeight: FontWeight.w700,
@@ -579,7 +678,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
             ],
           ),
-          SizedBox(height: 10.h),
+          SizedBox(height: 12.h),
           // Stars
           Row(
             children: List.generate(5, (i) {
@@ -596,15 +695,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
           SizedBox(height: 10.h),
           // Review text
-          Text(
-            review.review,
-            maxLines: 3,
-            overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.notoSansThai(
-              fontSize: 12.sp,
-              fontWeight: FontWeight.w400,
-              color: _textDark,
-              height: 1.5,
+          Expanded(
+            child: Text(
+              review.review,
+              maxLines: 4,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.notoSansThai(
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w400,
+                color: _textDark,
+                height: 1.5,
+              ),
             ),
           ),
         ],

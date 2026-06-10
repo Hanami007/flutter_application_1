@@ -25,14 +25,16 @@ final videoLessonsProvider =
   if (_isSupabaseActive) {
     try {
       final resp = await supabase_core.Supabase.instance.client
-          .from('videos')
+          .from('lessons')
           .select()
           .eq('course_id', courseId)
-          .order('order_index', ascending: true);
+          .order('sort_order', ascending: true);
       return (resp as List)
           .map((v) => VideoLesson.fromJson(v as Map<String, dynamic>))
           .toList();
-    } catch (_) {}
+    } catch (e) {
+      print('Supabase video lessons load error: $e');
+    }
   }
 
   // Mock fallback — filter mock videos for this course

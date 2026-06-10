@@ -1,12 +1,69 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../entities/app_notification.dart';
+import 'package:learn_hub/features/booking/domain/providers/booking_provider.dart';
+import 'package:learn_hub/features/enrollment/domain/providers/enrollment_provider.dart';
 
 // ─────────────────────────────────────────────
 // Notification StateNotifier
 // ─────────────────────────────────────────────
 
 class NotificationNotifier extends StateNotifier<List<AppNotification>> {
-  NotificationNotifier() : super(_defaultNotifications());
+  final Ref ref;
+  NotificationNotifier(this.ref) : super(_defaultNotifications()) {
+    _listenToUpcomingClasses();
+  }
+
+  void _listenToUpcomingClasses() {
+    ref.listen(allClassSessionsProvider, (previous, next) {
+      _checkAndAddUpcomingReminders();
+    });
+    ref.listen(enrolledCoursesProvider, (previous, next) {
+      _checkAndAddUpcomingReminders();
+    });
+    Future.microtask(() => _checkAndAddUpcomingReminders());
+  }
+
+  void _checkAndAddUpcomingReminders() {
+    final classSessions = ref.read(allClassSessionsProvider).value ?? [];
+    final enrolledCourses = ref.read(enrolledCoursesProvider).value ?? [];
+    if (classSessions.isEmpty || enrolledCourses.isEmpty) return;
+
+    final enrolledCourseIds = enrolledCourses.map((c) => c.id).toSet();
+    final enrolledSessions = classSessions.where((s) => enrolledCourseIds.contains(s.courseId)).toList();
+
+    final now = DateTime.now();
+    final upcomingSessions = enrolledSessions.where((s) => s.startTime.isAfter(now)).toList();
+
+    var updatedState = [...state];
+    var changed = false;
+
+    for (final session in upcomingSessions) {
+      final course = enrolledCourses.firstWhere((c) => c.id == session.courseId);
+      final reminderId = 'upcoming_session_${session.id}';
+      
+      final exists = state.any((n) => n.id == reminderId);
+      if (!exists) {
+        final startTime = session.startTime;
+        final timeStr = '${startTime.hour.toString().padLeft(2, '0')}:${startTime.minute.toString().padLeft(2, '0')}';
+        final dateStr = '${startTime.day}/${startTime.month}/${startTime.year}';
+        
+        final reminder = AppNotification(
+          id: reminderId,
+          title: '⏰ เตือนความจำ',
+          message: 'คลาส "${course.name}" จะเริ่มในวันที่ $dateStr เวลา $timeStr น.',
+          type: NotificationType.classReminder,
+          createdAt: DateTime.now(),
+          isRead: false,
+        );
+        updatedState.insert(0, reminder);
+        changed = true;
+      }
+    }
+
+    if (changed) {
+      state = updatedState;
+    }
+  }
 
   /// Prepopulate a few sample notifications on first launch.
   static List<AppNotification> _defaultNotifications() {
@@ -82,7 +139,7 @@ class NotificationNotifier extends StateNotifier<List<AppNotification>> {
 
 final notificationProvider =
     StateNotifierProvider<NotificationNotifier, List<AppNotification>>(
-  (ref) => NotificationNotifier(),
+  (ref) => NotificationNotifier(ref),
 );
 
 /// Total unread count — drives the badge in the bottom nav / app bar.

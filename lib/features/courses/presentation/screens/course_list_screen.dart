@@ -249,6 +249,7 @@ class _CourseListScreenState extends ConsumerState<CourseListScreen> {
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
+<<<<<<< HEAD
         ],
       ),
       child: Column(
@@ -361,6 +362,32 @@ class _CourseListScreenState extends ConsumerState<CourseListScreen> {
                     ),
                     ElevatedButton(
                       onPressed: enrolled
+=======
+
+          SizedBox(height: 16.h),
+
+          // Courses List
+          Expanded(
+            child: coursesAsync.when(
+              data: (courses) => ListView.builder(
+                padding: EdgeInsets.symmetric(horizontal: AppTheme.spacingMd),
+                itemCount: courses.length,
+                itemBuilder: (context, index) {
+                  final course = courses[index];
+                  final enrolled = enrolledIds.contains(course.id);
+                  return Padding(
+                    padding: EdgeInsets.only(bottom: 12.h),
+                    child: CourseCard(
+                      thumbnail: course.thumbnailUrl ?? 'https://placehold.co/300x200',
+                      courseName: course.name,
+                      instructor: 'Instructor',
+                      rating: course.rating,
+                      students: course.totalStudents,
+                      price: '฿${course.price.toStringAsFixed(0)}',
+                      isEnrolled: enrolled,
+                      onTap: () => context.go('/home/courses/${course.id}'),
+                      onBook: enrolled
+>>>>>>> da955614eb1b9c1286d32a93be72ed105c6a00d0
                           ? () => context.go('/home/learning/${course.id}')
                           : () => context.go('/home/courses/${course.id}'),
                       style: ElevatedButton.styleFrom(
