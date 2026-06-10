@@ -53,7 +53,7 @@ final currentUserIdProvider = Provider<String>((ref) {
 
 /// Watches whether the current user is enrolled in [courseId].
 final enrollmentStatusProvider =
-    FutureProvider.family<Enrollment?, String>((ref, courseId) async {
+    FutureProvider.autoDispose.family<Enrollment?, String>((ref, courseId) async {
   final repo = ref.watch(enrollmentRepositoryProvider);
   final userId = ref.watch(currentUserIdProvider);
   return repo.checkEnrollment(userId, courseId);
@@ -64,7 +64,7 @@ final enrollmentStatusProvider =
 // ─────────────────────────────────────────────
 
 final courseProgressForCourseProvider =
-    FutureProvider.family<CourseProgress?, String>((ref, courseId) async {
+    FutureProvider.autoDispose.family<CourseProgress?, String>((ref, courseId) async {
   final repo = ref.watch(enrollmentRepositoryProvider);
   final userId = ref.watch(currentUserIdProvider);
   return repo.getCourseProgress(userId, courseId);
@@ -74,7 +74,7 @@ final courseProgressForCourseProvider =
 // Enrolled Courses (My Learning)
 // ─────────────────────────────────────────────
 
-final enrolledCoursesProvider = FutureProvider<List<Course>>((ref) async {
+final enrolledCoursesProvider = FutureProvider.autoDispose<List<Course>>((ref) async {
   final repo = ref.watch(enrollmentRepositoryProvider);
   final userId = ref.watch(currentUserIdProvider);
   return repo.getEnrolledCourses(userId);
@@ -82,7 +82,7 @@ final enrolledCoursesProvider = FutureProvider<List<Course>>((ref) async {
 
 /// Derived from [enrolledCoursesProvider] — returns only the IDs as a Set for
 /// fast O(1) look-up per course without issuing per-card async requests.
-final enrolledCourseIdsProvider = FutureProvider<Set<String>>((ref) async {
+final enrolledCourseIdsProvider = FutureProvider.autoDispose<Set<String>>((ref) async {
   final courses = await ref.watch(enrolledCoursesProvider.future);
   return courses.map((c) => c.id).toSet();
 });
@@ -91,7 +91,7 @@ final enrolledCourseIdsProvider = FutureProvider<Set<String>>((ref) async {
 // Favorite Course IDs
 // ─────────────────────────────────────────────
 
-final favoriteCourseIdsProvider = StateNotifierProvider<FavoriteCoursesNotifier, Set<String>>((ref) {
+final favoriteCourseIdsProvider = StateNotifierProvider.autoDispose<FavoriteCoursesNotifier, Set<String>>((ref) {
   final repo = ref.watch(enrollmentRepositoryProvider);
   final userId = ref.watch(currentUserIdProvider);
   return FavoriteCoursesNotifier(repo, userId);
@@ -218,7 +218,7 @@ final progressUpdateProvider =
 // ─────────────────────────────────────────────
 
 final certificateProvider =
-    FutureProvider.family<Certificate?, String>((ref, courseId) async {
+    FutureProvider.autoDispose.family<Certificate?, String>((ref, courseId) async {
   final repo = ref.watch(enrollmentRepositoryProvider);
   final userId = ref.watch(currentUserIdProvider);
   return repo.getCertificate(userId, courseId);

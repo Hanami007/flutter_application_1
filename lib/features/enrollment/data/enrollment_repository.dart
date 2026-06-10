@@ -30,34 +30,6 @@ class EnrollmentRepository
   supabase_core.SupabaseClient get _client =>
       supabase_core.Supabase.instance.client;
 
-  Map<String, dynamic> _mapCourseDbToModel(Map<String, dynamic> dbJson) {
-    return {
-      'id': dbJson['id']?.toString() ?? '',
-      'name': dbJson['name']?.toString() ?? '',
-      'description': dbJson['description']?.toString() ?? '',
-      'categoryId':
-          dbJson['category_id']?.toString() ?? dbJson['categoryId']?.toString() ?? '',
-      'instructorId':
-          dbJson['instructor_id']?.toString() ?? dbJson['instructorId']?.toString() ?? '',
-      'thumbnailUrl':
-          dbJson['thumbnail_url']?.toString() ?? dbJson['thumbnailUrl']?.toString(),
-      'price': dbJson['price'] != null
-          ? double.parse(dbJson['price'].toString())
-          : 0.0,
-      'duration': dbJson['duration'] != null
-          ? int.parse(dbJson['duration'].toString())
-          : 0,
-      'level': dbJson['level']?.toString() ?? 'Beginner',
-      'rating': dbJson['rating'] != null
-          ? double.parse(dbJson['rating'].toString())
-          : 0.0,
-      'totalStudents': dbJson['total_students'] != null
-          ? int.parse(dbJson['total_students'].toString())
-          : 0,
-      'createdAt': dbJson['created_at'] ?? dbJson['createdAt'],
-      'updatedAt': dbJson['updated_at'] ?? dbJson['updatedAt'],
-    };
-  }
 
   // ─────────── CheckEnrollmentRepository ───────────
 
@@ -169,7 +141,7 @@ class EnrollmentRepository
             .in_('id', courseIds);
 
         return (coursesResp as List)
-            .map((c) => Course.fromJson(_mapCourseDbToModel(c)))
+            .map((c) => Course.fromDbJson(c as Map<String, dynamic>))
             .toList();
       } catch (_) {
         // Fall through

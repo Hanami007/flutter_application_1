@@ -24,6 +24,32 @@ abstract class Course with _$Course {
   }) = _Course;
 
   factory Course.fromJson(Map<String, dynamic> json) => _$CourseFromJson(json);
+
+  factory Course.fromDbJson(Map<String, dynamic> dbJson) {
+    return Course(
+      id: dbJson['id']?.toString() ?? '',
+      name: dbJson['name']?.toString() ?? '',
+      description: dbJson['description']?.toString() ?? '',
+      categoryId: dbJson['category_id']?.toString() ?? dbJson['categoryId']?.toString() ?? '',
+      instructorId: dbJson['instructor_id']?.toString() ?? dbJson['instructorId']?.toString() ?? '',
+      thumbnailUrl: dbJson['thumbnail_url']?.toString() ?? dbJson['thumbnailUrl']?.toString(),
+      price: dbJson['price'] != null ? double.parse(dbJson['price'].toString()) : 0.0,
+      duration: dbJson['duration'] != null ? int.parse(dbJson['duration'].toString()) : 0,
+      level: dbJson['level']?.toString() ?? 'Beginner',
+      rating: dbJson['rating'] != null ? double.parse(dbJson['rating'].toString()) : 0.0,
+      totalStudents: dbJson['total_students'] != null
+          ? int.parse(dbJson['total_students'].toString())
+          : (dbJson['totalStudents'] != null ? int.parse(dbJson['totalStudents'].toString()) : 0),
+      whatYouWillLearn: dbJson['what_you_will_learn'] != null
+          ? List<String>.from(dbJson['what_you_will_learn'] as List)
+          : (dbJson['whatYouWillLearn'] != null ? List<String>.from(dbJson['whatYouWillLearn'] as List) : null),
+      requirements: dbJson['requirements'] != null
+          ? List<String>.from(dbJson['requirements'] as List)
+          : (dbJson['requirements'] != null ? List<String>.from(dbJson['requirements'] as List) : null),
+      createdAt: dbJson['created_at'] != null ? DateTime.tryParse(dbJson['created_at'].toString()) : null,
+      updatedAt: dbJson['updated_at'] != null ? DateTime.tryParse(dbJson['updated_at'].toString()) : null,
+    );
+  }
 }
 
 @freezed

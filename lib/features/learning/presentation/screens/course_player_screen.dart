@@ -891,12 +891,32 @@ class _CoursePlayerScreenState extends ConsumerState<CoursePlayerScreen>
             ),
           ),
           SizedBox(height: 8.h),
-          ...[
-            'Master industry-standard concepts and tools',
-            'Build real-world projects from scratch',
-            'Get industry-recognized certification',
-            'Join our community of learners',
-          ].map((p) => _learnPoint(p)),
+          if (course.whatYouWillLearn != null && course.whatYouWillLearn!.isNotEmpty)
+            ...course.whatYouWillLearn!.map((p) => _learnPoint(p))
+          else
+            ...[
+              'Master industry-standard concepts and tools',
+              'Build real-world projects from scratch',
+              'Get industry-recognized certification',
+              'Join our community of learners',
+            ].map((p) => _learnPoint(p)),
+          SizedBox(height: 20.h),
+          Text(
+            'Requirements',
+            style: TextStyle(
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w700,
+              color: AppTheme.darkGrey,
+            ),
+          ),
+          SizedBox(height: 8.h),
+          if (course.requirements != null && course.requirements!.isNotEmpty)
+            ...course.requirements!.map((r) => _requirementPoint(r))
+          else
+            ...[
+              'Basic computer knowledge',
+              'A passion for learning',
+            ].map((r) => _requirementPoint(r)),
         ],
       ),
     );
@@ -934,6 +954,23 @@ class _CoursePlayerScreenState extends ConsumerState<CoursePlayerScreen>
         child: Row(
           children: [
             Icon(Icons.check_circle, size: 16.sp, color: AppTheme.successColor),
+            SizedBox(width: 8.w),
+            Expanded(
+              child: Text(
+                text,
+                style:
+                    TextStyle(fontSize: 13.sp, color: AppTheme.mediumGrey),
+              ),
+            ),
+          ],
+        ),
+      );
+
+  Widget _requirementPoint(String text) => Padding(
+        padding: EdgeInsets.only(bottom: 8.h),
+        child: Row(
+          children: [
+            Icon(Icons.radio_button_unchecked, size: 14.sp, color: AppTheme.primaryColor),
             SizedBox(width: 8.w),
             Expanded(
               child: Text(

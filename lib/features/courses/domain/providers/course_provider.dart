@@ -11,37 +11,37 @@ final courseRepositoryProvider = Provider((ref) {
 });
 
 // All Courses Provider
-final allCoursesProvider = FutureProvider<List<Course>>((ref) async {
+final allCoursesProvider = FutureProvider.autoDispose<List<Course>>((ref) async {
   final repository = ref.watch(courseRepositoryProvider);
   return repository.getAllCourses();
 });
 
 // Popular Courses Provider
-final popularCoursesProvider = FutureProvider<List<Course>>((ref) async {
+final popularCoursesProvider = FutureProvider.autoDispose<List<Course>>((ref) async {
   final repository = ref.watch(courseRepositoryProvider);
   return repository.getPopularCourses();
 });
 
 // Course Details Provider
-final courseDetailsProvider = FutureProvider.family<Course, String>((ref, courseId) async {
+final courseDetailsProvider = FutureProvider.autoDispose.family<Course, String>((ref, courseId) async {
   final repository = ref.watch(courseRepositoryProvider);
   return repository.getCourseById(courseId);
 });
 
 // All Reviews Provider
-final allReviewsProvider = FutureProvider<List<ReviewModel>>((ref) async {
+final allReviewsProvider = FutureProvider.autoDispose<List<ReviewModel>>((ref) async {
   final repository = ref.watch(courseRepositoryProvider);
   return repository.getAllReviews();
 });
 
 // Categories Provider
-final categoriesProvider = FutureProvider<List<Category>>((ref) async {
+final categoriesProvider = FutureProvider.autoDispose<List<Category>>((ref) async {
   final repository = ref.watch(courseRepositoryProvider);
   return repository.getCategories();
 });
 
 // Courses by Category Provider
-final coursesByCategoryProvider = FutureProvider.family<List<Course>, String>((ref, categoryId) async {
+final coursesByCategoryProvider = FutureProvider.autoDispose.family<List<Course>, String>((ref, categoryId) async {
   final repository = ref.watch(courseRepositoryProvider);
   return repository.getCoursesByCategory(categoryId);
 });
@@ -55,32 +55,6 @@ class CourseRepository {
     } catch (_) {
       return false;
     }
-  }
-
-  Map<String, dynamic> _mapCourseDbToModel(Map<String, dynamic> dbJson) {
-    return {
-      'id': dbJson['id']?.toString() ?? '',
-      'name': dbJson['name']?.toString() ?? '',
-      'description': dbJson['description']?.toString() ?? '',
-      'categoryId': dbJson['category_id']?.toString() ?? dbJson['categoryId']?.toString() ?? '',
-      'instructorId': dbJson['instructor_id']?.toString() ?? dbJson['instructorId']?.toString() ?? '',
-      'thumbnailUrl': dbJson['thumbnail_url']?.toString() ?? dbJson['thumbnailUrl']?.toString(),
-      'price': dbJson['price'] != null ? double.parse(dbJson['price'].toString()) : 0.0,
-      'duration': dbJson['duration'] != null ? int.parse(dbJson['duration'].toString()) : 0,
-      'level': dbJson['level']?.toString() ?? 'Beginner',
-      'rating': dbJson['rating'] != null ? double.parse(dbJson['rating'].toString()) : 0.0,
-      'totalStudents': dbJson['total_students'] != null
-          ? int.parse(dbJson['total_students'].toString())
-          : (dbJson['totalStudents'] != null ? int.parse(dbJson['totalStudents'].toString()) : 0),
-      'whatYouWillLearn': dbJson['what_you_will_learn'] != null
-          ? List<String>.from(dbJson['what_you_will_learn'] as List)
-          : (dbJson['whatYouWillLearn'] != null ? List<String>.from(dbJson['whatYouWillLearn'] as List) : null),
-      'requirements': dbJson['requirements'] != null
-          ? List<String>.from(dbJson['requirements'] as List)
-          : (dbJson['requirements'] != null ? List<String>.from(dbJson['requirements'] as List) : null),
-      'createdAt': dbJson['created_at'] ?? dbJson['createdAt'],
-      'updatedAt': dbJson['updated_at'] ?? dbJson['updatedAt'],
-    };
   }
 
   Map<String, dynamic> _mapCategoryDbToModel(Map<String, dynamic> dbJson) {
@@ -99,7 +73,7 @@ class CourseRepository {
             .from('courses')
             .select();
         return (response as List)
-            .map((json) => Course.fromJson(_mapCourseDbToModel(json)))
+            .map((json) => Course.fromDbJson(json as Map<String, dynamic>))
             .toList();
       } catch (e) {
         return MockCourseData.mockCourses;
@@ -117,7 +91,7 @@ class CourseRepository {
             .order('rating', ascending: false)
             .limit(3);
         return (response as List)
-            .map((json) => Course.fromJson(_mapCourseDbToModel(json)))
+            .map((json) => Course.fromDbJson(json as Map<String, dynamic>))
             .toList();
       } catch (e) {
         return MockCourseData.mockCourses.take(3).toList();
@@ -135,7 +109,7 @@ class CourseRepository {
             .eq('id', courseId)
             .maybeSingle();
         if (response != null) {
-          return Course.fromJson(_mapCourseDbToModel(response));
+          return Course.fromDbJson(response as Map<String, dynamic>);
         }
       } catch (_) {}
     }
@@ -169,7 +143,7 @@ class CourseRepository {
             .select()
             .eq('category_id', categoryId);
         return (response as List)
-            .map((json) => Course.fromJson(_mapCourseDbToModel(json)))
+            .map((json) => Course.fromDbJson(json as Map<String, dynamic>))
             .toList();
       } catch (e) {
         return MockCourseData.mockCourses.where((c) => c.categoryId == categoryId).toList();
