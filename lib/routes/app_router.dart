@@ -67,14 +67,18 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/auth/register',
         builder: (context, state) => const RegisterScreen(),
       ),
-      // Home Screen
-      GoRoute(
-        path: '/home',
-        builder: (context, state) => const HomeScreen(),
+      ShellRoute(
+        builder: (context, state, child) {
+          return MainLayout(child: child);
+        },
         routes: [
+          GoRoute(
+            path: '/home',
+            builder: (context, state) => const HomeScreen(),
+          ),
           // Courses
           GoRoute(
-            path: 'courses',
+            path: '/home/courses',
             builder: (context, state) => const CourseListScreen(),
             routes: [
               GoRoute(
@@ -88,7 +92,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
           // Booking
           GoRoute(
-            path: 'booking/:courseId',
+            path: '/home/booking/:courseId',
             builder: (context, state) {
               final courseId = state.pathParameters['courseId']!;
               return BookingScreen(courseId: courseId);
@@ -117,12 +121,12 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
           // Schedule
           GoRoute(
-            path: 'schedule',
+            path: '/home/schedule',
             builder: (context, state) => const ScheduleScreen(),
           ),
           // Learning — My Learning tab
           GoRoute(
-            path: 'learning',
+            path: '/home/learning',
             builder: (context, state) => const LearningScreen(),
             routes: [
               // Course Player (Start/Continue Learning)
@@ -151,12 +155,12 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
           // Notifications
           GoRoute(
-            path: 'notifications',
+            path: '/home/notifications',
             builder: (context, state) => const NotificationsScreen(),
           ),
           // Profile
           GoRoute(
-            path: 'profile',
+            path: '/home/profile',
             builder: (context, state) => const ProfileScreen(),
             routes: [
               GoRoute(

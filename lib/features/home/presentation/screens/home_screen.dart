@@ -28,7 +28,6 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  int _selectedNavIndex = 0;
 
   // ─── Category data ────────────────────────────────────────────────────────
   final List<_CategoryItem> _categories = const [
@@ -141,7 +140,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
         ),
       ),
-      bottomNavigationBar: _buildBottomNav(),
     );
   }
 
@@ -613,83 +611,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
     );
   }
-
-  // ─── Bottom Navigation ────────────────────────────────────────────────────
-  Widget _buildBottomNav() {
-    final items = [
-      _NavItem(Icons.home_rounded, Icons.home_outlined, 'Home'),
-      _NavItem(Icons.menu_book_rounded, Icons.menu_book_outlined, 'Courses'),
-      _NavItem(
-          Icons.calendar_month_rounded, Icons.calendar_month_outlined, 'Schedule'),
-      _NavItem(Icons.person_rounded, Icons.person_outlined, 'Profile'),
-    ];
-
-    final routes = ['/home', '/home/courses', '/home/schedule', '/home/profile'];
-
-    return Container(
-      decoration: BoxDecoration(
-        color: _cardBg,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 20,
-            offset: const Offset(0, -4),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        top: false,
-        child: SizedBox(
-          height: 76.h,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: List.generate(items.length, (index) {
-              final isSelected = _selectedNavIndex == index;
-              return GestureDetector(
-                onTap: () {
-                  setState(() => _selectedNavIndex = index);
-                  context.go(routes[index]);
-                },
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  curve: Curves.easeInOut,
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
-                  decoration: BoxDecoration(
-                    color: isSelected ? _tealLight : Colors.transparent,
-                    borderRadius: BorderRadius.circular(12.r),
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        isSelected
-                            ? items[index].activeIcon
-                            : items[index].inactiveIcon,
-                        size: 22.sp,
-                        color: isSelected ? _teal : _textMid,
-                      ),
-                      SizedBox(height: 2.h),
-                      Text(
-                        items[index].label,
-                        style: GoogleFonts.poppins(
-                          fontSize: 10.sp,
-                          fontWeight: isSelected
-                              ? FontWeight.w700
-                              : FontWeight.w400,
-                          color: isSelected ? _teal : _textMid,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }),
-          ),
-        ),
-      ),
-    );
-  }
 }
 
 // ─── Data classes ─────────────────────────────────────────────────────────────
@@ -798,3 +719,104 @@ class _TopIconButton extends StatelessWidget {
     );
   }
 }
+
+class MainLayout extends StatefulWidget {
+  final Widget child;
+  const MainLayout({super.key, required this.child});
+
+  @override
+  State<MainLayout> createState() => _MainLayoutState();
+}
+
+class _MainLayoutState extends State<MainLayout> {
+  int _getSelectedIndex(BuildContext context) {
+    final location = GoRouterState.of(context).uri.path;
+    if (location.startsWith('/home/courses')) return 1;
+    if (location.startsWith('/home/schedule')) return 2;
+    if (location.startsWith('/home/profile')) return 3;
+    if (location.startsWith('/home/learning')) return 3; // map learning/courses to their tabs
+    return 0; // default to Home
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final selectedIndex = _getSelectedIndex(context);
+
+    final items = [
+      const _NavItem(Icons.home_rounded, Icons.home_outlined, 'Home'),
+      const _NavItem(Icons.menu_book_rounded, Icons.menu_book_outlined, 'Courses'),
+      const _NavItem(
+          Icons.calendar_month_rounded, Icons.calendar_month_outlined, 'Schedule'),
+      const _NavItem(Icons.person_rounded, Icons.person_outlined, 'Profile'),
+    ];
+
+    final routes = ['/home', '/home/courses', '/home/schedule', '/home/profile'];
+
+    return Scaffold(
+      body: widget.child,
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: _cardBg,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 20,
+              offset: const Offset(0, -4),
+            ),
+          ],
+        ),
+        child: SafeArea(
+          top: false,
+          child: SizedBox(
+            height: 76.h,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: List.generate(items.length, (index) {
+                final isSelected = selectedIndex == index;
+                return GestureDetector(
+                  onTap: () {
+                    context.go(routes[index]);
+                  },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    curve: Curves.easeInOut,
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
+                    decoration: BoxDecoration(
+                      color: isSelected ? _tealLight : Colors.transparent,
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          isSelected
+                              ? items[index].activeIcon
+                              : items[index].inactiveIcon,
+                          size: 22.sp,
+                          color: isSelected ? _teal : _textMid,
+                        ),
+                        SizedBox(height: 2.h),
+                        Text(
+                          items[index].label,
+                          style: GoogleFonts.poppins(
+                            fontSize: 10.sp,
+                            fontWeight: isSelected
+                                ? FontWeight.w700
+                                : FontWeight.w400,
+                            color: isSelected ? _teal : _textMid,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+

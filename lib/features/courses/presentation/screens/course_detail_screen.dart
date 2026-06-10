@@ -3,14 +3,21 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/common_widgets.dart';
 import '../../../courses/domain/providers/course_provider.dart';
 import '../../../enrollment/domain/providers/enrollment_provider.dart';
 import '../../../enrollment/domain/entities/enrollment.dart';
 import '../../../courses/domain/entities/course.dart';
-import '../../../notifications/domain/entities/app_notification.dart';
-import '../../../notifications/domain/providers/notification_provider.dart';
+
+// ─── Unified Color Palette ───────────────────────────────────────────────────
+const _teal = Color(0xFF2DC9A8);
+const _tealLight = Color(0xFFE6F9F5);
+const _textDark = Color(0xFF1A1F36);
+const _textMid = Color(0xFF6E7A9A);
+const _bgColor = Color(0xFFF7F9FC);
+const _cardBg = Color(0xFFFFFFFF);
 
 class CourseDetailScreen extends ConsumerWidget {
   final String courseId;
@@ -48,28 +55,31 @@ class _CourseDetailBody extends ConsumerWidget {
         favoriteCourseIdsProvider.select((ids) => ids.contains(course.id)));
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: _bgColor,
       body: CustomScrollView(
         slivers: [
-          // Hero AppBar with Thumbnail
+          // Collapsible Header Image with premium circular overlay actions
           SliverAppBar(
             expandedHeight: 240.h,
             pinned: true,
-            backgroundColor: AppTheme.darkGrey,
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
-              onPressed: () => context.pop(),
+            backgroundColor: _textDark,
+            leading: Padding(
+              padding: EdgeInsets.all(8.w),
+              child: _CircularIconButton(
+                icon: Icons.arrow_back_ios_new_rounded,
+                onPressed: () => context.pop(),
+              ),
             ),
             actions: [
-              // Favorite Button
-              IconButton(
-                icon: Icon(
-                  isFavorite ? Icons.favorite : Icons.favorite_border,
-                  color: isFavorite ? Colors.red : Colors.white,
+              Padding(
+                padding: EdgeInsets.all(8.w),
+                child: _CircularIconButton(
+                  icon: isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                  iconColor: isFavorite ? Colors.red : _textDark,
+                  onPressed: () => ref
+                      .read(favoriteCourseIdsProvider.notifier)
+                      .toggle(course.id),
                 ),
-                onPressed: () => ref
-                    .read(favoriteCourseIdsProvider.notifier)
-                    .toggle(course.id),
               ),
             ],
             flexibleSpace: FlexibleSpaceBar(
@@ -81,9 +91,8 @@ class _CourseDetailBody extends ConsumerWidget {
                         'https://via.placeholder.com/600x300',
                     fit: BoxFit.cover,
                     errorWidget: (_, __, ___) => Container(
-                      color: AppTheme.veryLightGrey,
-                      child: Icon(Icons.image, size: 60.sp,
-                          color: AppTheme.mediumGrey),
+                      color: const Color(0xFFE2E8F0),
+                      child: Icon(Icons.image, size: 60.sp, color: _textMid),
                     ),
                   ),
                   // Gradient overlay
@@ -93,8 +102,9 @@ class _CourseDetailBody extends ConsumerWidget {
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                         colors: [
+                          Colors.black.withValues(alpha: 0.4),
                           Colors.transparent,
-                          Colors.black.withOpacity(0.7),
+                          Colors.black.withValues(alpha: 0.6),
                         ],
                       ),
                     ),
@@ -104,59 +114,63 @@ class _CourseDetailBody extends ConsumerWidget {
             ),
           ),
 
-          // Course Content
+          // Course content details
           SliverToBoxAdapter(
             child: Padding(
-              padding: EdgeInsets.all(AppTheme.spacingMd),
+              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Level Badge
                   Container(
-                    padding: EdgeInsets.symmetric(
-                        horizontal: 10.w, vertical: 4.h),
+                    padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
                     decoration: BoxDecoration(
-                      color: AppTheme.primaryColor.withOpacity(0.1),
-                      borderRadius:
-                          BorderRadius.circular(AppTheme.radiusSm),
+                      color: _tealLight,
+                      borderRadius: BorderRadius.circular(12.r),
                     ),
                     child: Text(
-                      course.level,
-                      style: TextStyle(
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.w600,
-                        color: AppTheme.primaryColor,
+                      course.level.toUpperCase(),
+                      style: GoogleFonts.poppins(
+                        fontSize: 11.sp,
+                        fontWeight: FontWeight.w700,
+                        color: _teal,
+                        letterSpacing: 0.5,
                       ),
                     ),
                   ),
-                  SizedBox(height: 10.h),
+                  SizedBox(height: 12.h),
 
-                  // Course Name
+                  // Course Title
                   Text(
                     course.name,
-                    style: Theme.of(context).textTheme.headlineSmall,
+                    style: GoogleFonts.notoSansThai(
+                      fontSize: 22.sp,
+                      fontWeight: FontWeight.w800,
+                      color: _textDark,
+                      height: 1.3,
+                    ),
                   ),
                   SizedBox(height: 8.h),
 
-                  // Rating row
+                  // Rating Row
                   Row(
                     children: [
-                      Icon(Icons.star, size: 16.sp, color: Colors.amber),
+                      Icon(Icons.star_rounded, size: 18.sp, color: Colors.amber),
                       SizedBox(width: 4.w),
                       Text(
                         '${course.rating}',
-                        style: TextStyle(
+                        style: GoogleFonts.poppins(
                           fontSize: 14.sp,
-                          fontWeight: FontWeight.w700,
-                          color: AppTheme.darkGrey,
+                          fontWeight: FontWeight.bold,
+                          color: _textDark,
                         ),
                       ),
-                      SizedBox(width: 4.w),
+                      SizedBox(width: 6.w),
                       Text(
-                        '(${course.totalStudents} reviews)',
-                        style: TextStyle(
+                        '(${course.totalStudents} รีวิวจากผู้เรียน)',
+                        style: GoogleFonts.notoSansThai(
                           fontSize: 13.sp,
-                          color: AppTheme.mediumGrey,
+                          color: _textMid,
                         ),
                       ),
                     ],
@@ -164,33 +178,35 @@ class _CourseDetailBody extends ConsumerWidget {
 
                   SizedBox(height: 20.h),
 
-                  // Stats Row
+                  // Info Stats Grid
                   Container(
-                    padding: EdgeInsets.all(16.w),
+                    padding: EdgeInsets.symmetric(vertical: 14.h),
                     decoration: BoxDecoration(
-                      color: AppTheme.surfaceColor,
-                      borderRadius:
-                          BorderRadius.circular(AppTheme.radiusMd),
-                      boxShadow: AppTheme.softShadow,
+                      color: _cardBg,
+                      borderRadius: BorderRadius.circular(16.r),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.04),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        _buildStatCard(
-                            '${course.duration}h', 'Duration', Icons.schedule),
+                        _buildStatCard('${course.duration} ชม.', 'ระยะเวลาเรียน', Icons.schedule_rounded),
                         _verticalDivider(),
-                        _buildStatCard(
-                            course.level, 'Level', Icons.signal_cellular_alt),
+                        _buildStatCard(course.level, 'ระดับวิชา', Icons.bar_chart_rounded),
                         _verticalDivider(),
-                        _buildStatCard('${course.totalStudents}', 'Students',
-                            Icons.group),
+                        _buildStatCard('${course.totalStudents}', 'จำนวนผู้เรียน', Icons.people_alt_rounded),
                       ],
                     ),
                   ),
 
                   SizedBox(height: 24.h),
 
-                  // Price / Enrollment Section (dynamic)
+                  // Price Card / Enrollment Status
                   _EnrollmentSection(
                     course: course,
                     enrollmentAsync: enrollmentAsync,
@@ -199,40 +215,56 @@ class _CourseDetailBody extends ConsumerWidget {
 
                   SizedBox(height: 24.h),
 
-                  // Description
+                  // About Course Description
                   Text(
-                    'About Course',
-                    style: Theme.of(context).textTheme.headlineSmall,
+                    'เกี่ยวกับคอร์สนี้',
+                    style: GoogleFonts.notoSansThai(
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.bold,
+                      color: _textDark,
+                    ),
                   ),
                   SizedBox(height: 12.h),
                   Text(
                     course.description,
-                    style: Theme.of(context).textTheme.bodyMedium,
+                    style: GoogleFonts.notoSansThai(
+                      fontSize: 14.sp,
+                      color: _textMid,
+                      height: 1.6,
+                    ),
                   ),
 
                   SizedBox(height: 24.h),
 
-                  // What You'll Learn
+                  // What you'll learn list points
                   Text(
-                    "What You'll Learn",
-                    style: Theme.of(context).textTheme.headlineSmall,
+                    "สิ่งที่คุณจะได้รับจากคอร์สนี้",
+                    style: GoogleFonts.notoSansThai(
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.bold,
+                      color: _textDark,
+                    ),
                   ),
                   SizedBox(height: 12.h),
-                  _buildLearnPoint('Master the core concepts and tools'),
-                  _buildLearnPoint('Build real-world projects'),
-                  _buildLearnPoint('Get industry-recognized certification'),
-                  _buildLearnPoint('Join our community of 1,500+ learners'),
+                  _buildLearnPoint('เข้าใจแนวคิดพื้นฐานและเครื่องมือที่สำคัญทั้งหมด'),
+                  _buildLearnPoint('ฝึกทำโปรเจกต์จริงเพื่อนำไปต่อยอดทำงานได้จริง'),
+                  _buildLearnPoint('รับใบประกาศนียบัตรเมื่อเรียนจบหลักสูตร'),
+                  _buildLearnPoint('รับสิทธิ์เข้าร่วมกลุ่มผู้เรียนเพื่อแลกเปลี่ยนความรู้'),
 
                   SizedBox(height: 24.h),
 
-                  // Requirements
+                  // Requirements list points
                   Text(
-                    'Requirements',
-                    style: Theme.of(context).textTheme.headlineSmall,
+                    'ความต้องการในการเรียน',
+                    style: GoogleFonts.notoSansThai(
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.bold,
+                      color: _textDark,
+                    ),
                   ),
                   SizedBox(height: 12.h),
-                  _buildRequirement('Basic computer knowledge'),
-                  _buildRequirement('A passion for learning'),
+                  _buildRequirement('ความรู้พื้นฐานเกี่ยวกับการใช้คอมพิวเตอร์ทั่วไป'),
+                  _buildRequirement('มีความพร้อมและความตั้งใจในการเรียนรู้สิ่งใหม่'),
 
                   SizedBox(height: 32.h),
                 ],
@@ -252,51 +284,54 @@ class _CourseDetailBody extends ConsumerWidget {
   Widget _buildStatCard(String value, String label, IconData icon) {
     return Column(
       children: [
-        Icon(icon, size: 20.sp, color: AppTheme.primaryColor),
-        SizedBox(height: 4.h),
+        Icon(icon, size: 22.sp, color: _teal),
+        SizedBox(height: 6.h),
         Text(
           value,
-          style: TextStyle(
+          style: GoogleFonts.notoSansThai(
             fontSize: 14.sp,
-            fontWeight: FontWeight.w700,
-            color: AppTheme.darkGrey,
+            fontWeight: FontWeight.bold,
+            color: _textDark,
           ),
         ),
         Text(
           label,
-          style: TextStyle(fontSize: 11.sp, color: AppTheme.mediumGrey),
+          style: GoogleFonts.notoSansThai(fontSize: 11.sp, color: _textMid),
         ),
       ],
     );
   }
 
   Widget _verticalDivider() => Container(
-        height: 40.h,
+        height: 36.h,
         width: 1,
-        color: AppTheme.lightGrey,
+        color: const Color(0xFFE2E8F0),
       );
 
   Widget _buildLearnPoint(String text) {
     return Padding(
       padding: EdgeInsets.only(bottom: 8.h),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 24.w,
-            height: 24.w,
-            decoration: BoxDecoration(
+            width: 22.w,
+            height: 22.w,
+            margin: EdgeInsets.only(top: 2.h),
+            decoration: const BoxDecoration(
               shape: BoxShape.circle,
-              color: AppTheme.successColor.withOpacity(0.1),
+              color: _tealLight,
             ),
-            child: Icon(Icons.check, size: 14.sp, color: AppTheme.successColor),
+            child: Icon(Icons.check, size: 13.sp, color: _teal),
           ),
           SizedBox(width: 12.w),
           Expanded(
             child: Text(
               text,
-              style: TextStyle(
+              style: GoogleFonts.notoSansThai(
                 fontSize: 14.sp,
-                color: AppTheme.darkGrey,
+                color: _textDark,
+                height: 1.4,
               ),
             ),
           ),
@@ -309,20 +344,22 @@ class _CourseDetailBody extends ConsumerWidget {
     return Padding(
       padding: EdgeInsets.only(bottom: 8.h),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 20.w,
-            height: 20.w,
+            width: 18.w,
+            height: 18.w,
+            margin: EdgeInsets.only(top: 3.h),
             decoration: BoxDecoration(
-              border: Border.all(color: AppTheme.lightGrey),
+              border: Border.all(color: const Color(0xFFCBD5E0), width: 1.5),
               borderRadius: BorderRadius.circular(4.r),
             ),
             child: Center(
               child: Container(
                 width: 8.w,
                 height: 8.w,
-                decoration: BoxDecoration(
-                  color: AppTheme.primaryColor,
+                decoration: const BoxDecoration(
+                  color: _teal,
                   shape: BoxShape.circle,
                 ),
               ),
@@ -332,7 +369,11 @@ class _CourseDetailBody extends ConsumerWidget {
           Expanded(
             child: Text(
               text,
-              style: TextStyle(fontSize: 14.sp, color: AppTheme.mediumGrey),
+              style: GoogleFonts.notoSansThai(
+                fontSize: 14.sp,
+                color: _textMid,
+                height: 1.4,
+              ),
             ),
           ),
         ],
@@ -341,10 +382,41 @@ class _CourseDetailBody extends ConsumerWidget {
   }
 }
 
-// ─────────────────────────────────────────────
-// Price / Enrollment Info Section (inline)
-// ─────────────────────────────────────────────
+class _CircularIconButton extends StatelessWidget {
+  final IconData icon;
+  final Color? iconColor;
+  final VoidCallback onPressed;
 
+  const _CircularIconButton({
+    required this.icon,
+    this.iconColor,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.9),
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: IconButton(
+        icon: Icon(icon, color: iconColor ?? _textDark, size: 18.sp),
+        padding: EdgeInsets.zero,
+        onPressed: onPressed,
+      ),
+    );
+  }
+}
+
+// ─── Enrollment Section Builder ──────────────────────────────────────────────
 class _EnrollmentSection extends ConsumerWidget {
   final Course course;
   final AsyncValue<Enrollment?> enrollmentAsync;
@@ -361,10 +433,8 @@ class _EnrollmentSection extends ConsumerWidget {
     return enrollmentAsync.when(
       data: (enrollment) {
         if (enrollment == null) {
-          // NOT purchased — show price card
           return _PriceCard(course: course);
         }
-        // Purchased — show enrollment info
         return progressAsync.when(
           data: (progress) => _EnrollmentInfoCard(
               course: course, enrollment: enrollment, progress: progress),
@@ -387,55 +457,78 @@ class _PriceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final double originalPrice = course.price * 1.5;
+
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppTheme.primaryColor.withOpacity(0.08),
-            AppTheme.secondaryColor.withOpacity(0.06),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-        border: Border.all(
-            color: AppTheme.primaryColor.withOpacity(0.2)),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Row(
         children: [
-          Icon(Icons.local_offer, color: AppTheme.primaryColor, size: 24.sp),
-          SizedBox(width: 12.w),
+          Container(
+            padding: EdgeInsets.all(10.w),
+            decoration: const BoxDecoration(
+              color: _tealLight,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(Icons.local_offer_rounded, color: _teal, size: 20.sp),
+          ),
+          SizedBox(width: 14.w),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Course Price',
-                style: TextStyle(
-                    fontSize: 12.sp, color: AppTheme.mediumGrey),
+                'ราคาพิเศษวันนี้',
+                style: GoogleFonts.notoSansThai(fontSize: 12.sp, color: _textMid),
               ),
-              Text(
-                '฿${course.price.toStringAsFixed(0)}',
-                style: TextStyle(
-                  fontSize: 22.sp,
-                  fontWeight: FontWeight.w800,
-                  color: AppTheme.primaryColor,
-                ),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.baseline,
+                textBaseline: TextBaseline.alphabetic,
+                children: [
+                  Text(
+                    '฿${course.price.toStringAsFixed(0)}',
+                    style: GoogleFonts.poppins(
+                      fontSize: 22.sp,
+                      fontWeight: FontWeight.w800,
+                      color: _textDark,
+                    ),
+                  ),
+                  SizedBox(width: 8.w),
+                  Text(
+                    '฿${originalPrice.toStringAsFixed(0)}',
+                    style: GoogleFonts.poppins(
+                      fontSize: 13.sp,
+                      color: _textMid,
+                      decoration: TextDecoration.lineThrough,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
           const Spacer(),
           Container(
-            padding:
-                EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
             decoration: BoxDecoration(
-              color: AppTheme.successColor.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(AppTheme.radiusSm),
+              color: const Color(0xFFE6F4EA),
+              borderRadius: BorderRadius.circular(12.r),
             ),
             child: Text(
-              'One-time',
-              style: TextStyle(
+              'ซื้อขาดครั้งเดียว',
+              style: GoogleFonts.notoSansThai(
                 fontSize: 11.sp,
-                fontWeight: FontWeight.w600,
-                color: AppTheme.successColor,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFF137333),
               ),
             ),
           ),
@@ -465,55 +558,54 @@ class _EnrollmentInfoCard extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: AppTheme.successColor.withOpacity(0.07),
-        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-        border: Border.all(color: AppTheme.successColor.withOpacity(0.3)),
+        color: _tealLight,
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: _teal.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(Icons.verified, color: AppTheme.successColor, size: 20.sp),
+              Icon(Icons.verified_rounded, color: _teal, size: 22.sp),
               SizedBox(width: 8.w),
               Text(
-                isCompleted ? 'Course Completed 🎉' : 'You\'re Enrolled!',
-                style: TextStyle(
+                isCompleted ? 'เรียนสำเร็จแล้ว 🎉' : 'คุณลงทะเบียนคอร์สนี้แล้ว!',
+                style: GoogleFonts.notoSansThai(
                   fontSize: 15.sp,
-                  fontWeight: FontWeight.w700,
-                  color: AppTheme.successColor,
+                  fontWeight: FontWeight.bold,
+                  color: _teal,
                 ),
               ),
             ],
           ),
           if (progress != null && !isCompleted) ...[
-            SizedBox(height: 10.h),
+            SizedBox(height: 12.h),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  '${displayPct.toStringAsFixed(0)}% Complete',
-                  style: TextStyle(
+                  'ความคืบหน้าการเรียน ${displayPct.toStringAsFixed(0)}%',
+                  style: GoogleFonts.notoSansThai(
                     fontSize: 13.sp,
                     fontWeight: FontWeight.w600,
-                    color: AppTheme.darkGrey,
+                    color: _textDark,
                   ),
                 ),
                 Text(
-                  '${progress!.videosWatched}/${progress!.videosTotal} lessons',
-                  style: TextStyle(
-                      fontSize: 12.sp, color: AppTheme.mediumGrey),
+                  '${progress!.videosWatched}/${progress!.videosTotal} บทเรียน',
+                  style: GoogleFonts.notoSansThai(fontSize: 12.sp, color: _textMid),
                 ),
               ],
             ),
-            SizedBox(height: 6.h),
+            SizedBox(height: 8.h),
             ClipRRect(
               borderRadius: BorderRadius.circular(4.r),
               child: LinearProgressIndicator(
                 value: (displayPct / 100).clamp(0.0, 1.0),
                 minHeight: 6.h,
-                backgroundColor: AppTheme.lightGrey,
-                valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryColor),
+                backgroundColor: const Color(0xFFE2E8F0),
+                valueColor: const AlwaysStoppedAnimation<Color>(_teal),
               ),
             ),
           ],
@@ -523,10 +615,7 @@ class _EnrollmentInfoCard extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────
-// Bottom CTA Bar (dynamic button)
-// ─────────────────────────────────────────────
-
+// ─── CTA Bottom Bar ──────────────────────────────────────────────────────────
 class _CourseCTABar extends ConsumerWidget {
   final Course course;
   final AsyncValue<Enrollment?> enrollmentAsync;
@@ -545,17 +634,31 @@ class _CourseCTABar extends ConsumerWidget {
     return enrollmentAsync.when(
       data: (enrollment) {
         if (enrollment == null) {
-          // ── NOT PURCHASED ─────────────────────
           return _buildBottomBar(
-            child: PrimaryButton(
-              text: '  Buy Course  –  ฿${course.price.toStringAsFixed(0)}',
-              isLoading: purchaseState is AsyncLoading,
-              onPressed: () => context.go('/home/booking/${course.id}'),
+            child: SizedBox(
+              width: double.infinity,
+              height: 48.h,
+              child: ElevatedButton(
+                onPressed: purchaseState is AsyncLoading
+                    ? null
+                    : () => context.go('/home/booking/${course.id}'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _teal,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24.r),
+                  ),
+                ),
+                child: Text(
+                  'สมัครเรียนคอร์สนี้  –  ฿${course.price.toStringAsFixed(0)}',
+                  style: GoogleFonts.notoSansThai(fontSize: 15.sp, fontWeight: FontWeight.bold),
+                ),
+              ),
             ),
           );
         }
 
-        // ── PURCHASED: check progress ──────────
         return progressAsync.when(
           data: (progress) {
             final pct = progress?.progressPercentage ?? 0.0;
@@ -564,16 +667,27 @@ class _CourseCTABar extends ConsumerWidget {
             final isCompleted = displayPct >= 100;
 
             if (isCompleted) {
-              // COMPLETED
               return _buildBottomBar(
                 child: Row(
                   children: [
                     Expanded(
-                      child: PrimaryButton(
-                        text: '🏆  Review Course',
-                        backgroundColor: const Color(0xFFF59E0B),
-                        onPressed: () =>
-                            context.go('/home/learning/${course.id}'),
+                      child: SizedBox(
+                        height: 48.h,
+                        child: ElevatedButton(
+                          onPressed: () => context.go('/home/learning/${course.id}'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFF59E0B),
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(24.r),
+                            ),
+                          ),
+                          child: Text(
+                            '🏆  รีวิวคอร์สเรียน',
+                            style: GoogleFonts.notoSansThai(fontSize: 15.sp, fontWeight: FontWeight.bold),
+                          ),
+                        ),
                       ),
                     ),
                     SizedBox(width: 12.w),
@@ -582,53 +696,135 @@ class _CourseCTABar extends ConsumerWidget {
                 ),
               );
             } else if (hasStarted) {
-              // IN PROGRESS
               return _buildBottomBar(
-                child: PrimaryButton(
-                  text: '▶  Continue Learning  –  ${displayPct.toStringAsFixed(0)}%',
-                  onPressed: () =>
-                      context.go('/home/learning/${course.id}'),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 48.h,
+                  child: ElevatedButton(
+                    onPressed: () => context.go('/home/learning/${course.id}'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _teal,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(24.r),
+                      ),
+                    ),
+                    child: Text(
+                      '▶  เรียนต่อจากเดิม  –  ${displayPct.toStringAsFixed(0)}%',
+                      style: GoogleFonts.notoSansThai(fontSize: 15.sp, fontWeight: FontWeight.bold),
+                    ),
+                  ),
                 ),
               );
             } else {
-              // PURCHASED BUT NOT STARTED
               return _buildBottomBar(
-                child: PrimaryButton(
-                  text: '🎓  Start Learning',
-                  backgroundColor: AppTheme.successColor,
-                  onPressed: () =>
-                      context.go('/home/learning/${course.id}'),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 48.h,
+                  child: ElevatedButton(
+                    onPressed: () => context.go('/home/learning/${course.id}'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF0F7A5F),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(24.r),
+                      ),
+                    ),
+                    child: Text(
+                      '🎓  เริ่มเรียนเลย',
+                      style: GoogleFonts.notoSansThai(fontSize: 15.sp, fontWeight: FontWeight.bold),
+                    ),
+                  ),
                 ),
               );
             }
           },
           loading: () => _buildBottomBar(
-            child: PrimaryButton(
-              text: '🎓  Start Learning',
-              backgroundColor: AppTheme.successColor,
-              onPressed: () => context.go('/home/learning/${course.id}'),
+            child: SizedBox(
+              width: double.infinity,
+              height: 48.h,
+              child: ElevatedButton(
+                onPressed: () => context.go('/home/learning/${course.id}'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF0F7A5F),
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24.r),
+                  ),
+                ),
+                child: Text(
+                  '🎓  เริ่มเรียนเลย',
+                  style: GoogleFonts.notoSansThai(fontSize: 15.sp, fontWeight: FontWeight.bold),
+                ),
+              ),
             ),
           ),
           error: (_, __) => _buildBottomBar(
-            child: PrimaryButton(
-              text: '🎓  Start Learning',
-              backgroundColor: AppTheme.successColor,
-              onPressed: () => context.go('/home/learning/${course.id}'),
+            child: SizedBox(
+              width: double.infinity,
+              height: 48.h,
+              child: ElevatedButton(
+                onPressed: () => context.go('/home/learning/${course.id}'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF0F7A5F),
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24.r),
+                  ),
+                ),
+                child: Text(
+                  '🎓  เริ่มเรียนเลย',
+                  style: GoogleFonts.notoSansThai(fontSize: 15.sp, fontWeight: FontWeight.bold),
+                ),
+              ),
             ),
           ),
         );
       },
       loading: () => _buildBottomBar(
-        child: const PrimaryButton(
-          text: 'Loading...',
-          isLoading: true,
-          onPressed: _noop,
+        child: SizedBox(
+          width: double.infinity,
+          height: 48.h,
+          child: ElevatedButton(
+            onPressed: null,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _teal,
+              disabledBackgroundColor: _teal.withValues(alpha: 0.5),
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24.r),
+              ),
+            ),
+            child: Text(
+              'กำลังโหลด...',
+              style: GoogleFonts.notoSansThai(fontSize: 15.sp, fontWeight: FontWeight.bold, color: Colors.white),
+            ),
+          ),
         ),
       ),
       error: (_, __) => _buildBottomBar(
-        child: PrimaryButton(
-          text: '  Buy Course  –  ฿${course.price.toStringAsFixed(0)}',
-          onPressed: () => context.go('/home/booking/${course.id}'),
+        child: SizedBox(
+          width: double.infinity,
+          height: 48.h,
+          child: ElevatedButton(
+            onPressed: () => context.go('/home/booking/${course.id}'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _teal,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24.r),
+              ),
+            ),
+            child: Text(
+              'สมัครเรียนคอร์สนี้  –  ฿${course.price.toStringAsFixed(0)}',
+              style: GoogleFonts.notoSansThai(fontSize: 15.sp, fontWeight: FontWeight.bold),
+            ),
+          ),
         ),
       ),
     );
@@ -638,10 +834,11 @@ class _CourseCTABar extends ConsumerWidget {
     return Container(
       padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 24.h),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceColor,
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 12,
             offset: const Offset(0, -4),
           ),
@@ -650,40 +847,37 @@ class _CourseCTABar extends ConsumerWidget {
       child: child,
     );
   }
-  }
-// ─────────────────────────────────────────────
-// Certificate Quick Button
-// ─────────────────────────────────────────────
+}
 
-class _CertificateButton extends ConsumerWidget {
+class _CertificateButton extends StatelessWidget {
   final String courseId;
 
   const _CertificateButton({required this.courseId});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return SizedBox(
       height: 48.h,
+      width: 48.h,
       child: ElevatedButton(
         onPressed: () {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-                content: Text('Certificate download coming soon!')),
+                content: Text('กำลังดำเนินการดาวน์โหลดเกียรติบัตร...')),
           );
         },
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFFF59E0B).withOpacity(0.15),
+          backgroundColor: const Color(0xFFF59E0B).withValues(alpha: 0.15),
           foregroundColor: const Color(0xFFF59E0B),
           elevation: 0,
+          padding: EdgeInsets.zero,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+            borderRadius: BorderRadius.circular(12.r),
             side: const BorderSide(color: Color(0xFFF59E0B), width: 1.5),
           ),
         ),
-        child: Icon(Icons.workspace_premium, size: 22.sp),
+        child: Icon(Icons.workspace_premium_rounded, size: 22.sp),
       ),
     );
   }
 }
-
-void _noop() {}
