@@ -283,6 +283,7 @@ class BookingRepository {
     required double amount,
     required String paymentMethod,
     String? transactionId,
+    String? slipUrl,
   }) async {
     if (_isSupabaseActive && _isValidUuid(userId) && _isValidUuid(bookingId)) {
       try {
@@ -295,6 +296,7 @@ class BookingRepository {
           'transaction_id': transactionId ?? 'TXN-${DateTime.now().millisecondsSinceEpoch}',
           'status': 'completed',
           'payment_date': DateTime.now().toIso8601String(),
+          'slip_url': slipUrl,
         };
         debugPrint('Inserting payment payload: $payload');
         await client.from('payments').insert(payload);

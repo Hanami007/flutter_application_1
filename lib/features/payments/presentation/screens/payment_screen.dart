@@ -8,6 +8,7 @@ import 'package:learn_hub/shared/widgets/common_widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:dotted_border/dotted_border.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' as supabase_core;
 import '../../../booking/domain/providers/booking_provider.dart';
 import '../../../enrollment/domain/providers/enrollment_provider.dart';
 import '../../../notifications/domain/entities/app_notification.dart';
@@ -204,15 +205,41 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
 
             setState(() => _isProcessing = true);
 
-            // Simulate payment processing
-            await Future.delayed(const Duration(seconds: 2));
+            // 1. Upload transfer slip if available
+            String? slipUrl;
+            try {
+              if (_slipImageBytes != null && _slipImage != null) {
+                final client = supabase_core.Supabase.instance.client;
+                final fileExt = _slipImage!.name.split('.').lastOrNull ?? 'jpg';
+                final fileName = 'slip_${DateTime.now().millisecondsSinceEpoch}.$fileExt';
+                final userId = ref.read(currentUserIdProvider);
+                final filePath = '$userId/$fileName';
 
-            // 1. Create enrollment record (course purchase)
+                debugPrint('Uploading slip to storage: $filePath');
+                await client.storage.from('payment-slips').uploadBinary(
+                      filePath,
+                      _slipImageBytes!,
+                      fileOptions: const supabase_core.FileOptions(upsert: true),
+                    );
+
+                final responseUrl = client.storage.from('payment-slips').getPublicUrl(filePath);
+                slipUrl = responseUrl;
+                debugPrint('Uploaded slip successfully: $slipUrl');
+              }
+            } catch (e) {
+              debugPrint('Failed to upload slip to Supabase storage: $e');
+              // Continue anyway so user booking is not blocked
+            }
+
+            // Simulate payment processing
+            await Future.delayed(const Duration(seconds: 1));
+
+            // 2. Create enrollment record (course purchase)
             final enrollmentCreated = await ref
                 .read(purchaseCourseProvider.notifier)
                 .purchase(widget.courseId);
 
-            // 2. Create booking record (session booking)
+            // 3. Create booking record (session booking)
             final repository = ref.read(bookingRepositoryProvider);
             final userId = ref.read(currentUserIdProvider);
             final bookingReq = BookingRequest(
@@ -224,13 +251,14 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
             );
             final booking = await repository.createBooking(bookingReq);
 
-            // 3. Create payment record (persist to database)
+            // 4. Create payment record (persist to database)
             await repository.createPaymentRecord(
               userId: userId,
               bookingId: booking.id,
               amount: 5999.0, // Match the total amount
               paymentMethod: selectedPaymentMethod,
               transactionId: _transactionIdController.text.trim(),
+              slipUrl: slipUrl,
             );
 
             // Add notifications for purchase
