@@ -2,8 +2,7 @@ import 'package:flutter/material.dart' hide ErrorWidget;
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'package:learn_hub/core/theme/app_theme.dart';
-import 'package:learn_hub/shared/constants/app_strings.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:learn_hub/shared/widgets/common_widgets.dart';
 import 'package:learn_hub/features/booking/domain/providers/booking_provider.dart';
 import 'package:learn_hub/features/booking/domain/entities/booking.dart';
@@ -12,7 +11,7 @@ import 'package:learn_hub/features/courses/domain/entities/course.dart';
 import 'package:learn_hub/features/enrollment/domain/providers/enrollment_provider.dart';
 
 class ScheduleScreen extends ConsumerStatefulWidget {
-  const ScheduleScreen({Key? key}) : super(key: key);
+  const ScheduleScreen({super.key});
 
   @override
   ConsumerState<ScheduleScreen> createState() => _ScheduleScreenState();
@@ -34,12 +33,28 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
     }
   }
 
-  String _formatSelectedDate(DateTime date) {
-    final months = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
+  String _formatSelectedDateThai(DateTime date) {
+    final monthsTh = [
+      'ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.',
+      'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'
     ];
-    return '${date.day} ${months[date.month - 1]} ${date.year}';
+    return '${date.day} ${monthsTh[date.month - 1]} ${date.year + 543}';
+  }
+
+  Color _getCategoryColor(String courseName) {
+    final name = courseName.toLowerCase();
+    if (name.contains('procreate') || name.contains('วาดรูป') || name.contains('ศิลปะ') || name.contains('art')) {
+      return const Color(0xFFAB94F0); // Purple
+    } else if (name.contains('flutter') || name.contains('program') || name.contains('code') || name.contains('โปรแกรม')) {
+      return const Color(0xFF2DC9A8); // Teal
+    } else if (name.contains('guitar') || name.contains('ดนตรี') || name.contains('music')) {
+      return const Color(0xFFFF9F50); // Orange
+    } else if (name.contains('cook') || name.contains('อาหาร') || name.contains('cooking')) {
+      return const Color(0xFFFF7EB3); // Pink
+    } else if (name.contains('science') || name.contains('วิทยาศาสตร์') || name.contains('วิทย์')) {
+      return const Color(0xFF5B9CF6); // Blue
+    }
+    return const Color(0xFF2DC9A8); // Default brand Teal
   }
 
   @override
@@ -54,6 +69,11 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
     final classSessions = classSessionsAsync.value ?? [];
     final courses = coursesAsync.value ?? [];
     final enrolledCourses = enrolledCoursesAsync.value ?? [];
+
+    const textDarkColor = Color(0xFF1A1F36);
+    const textMidColor = Color(0xFF6E7A9A);
+    const brandTeal = Color(0xFF2DC9A8);
+    const brandTealLight = Color(0xFFE6F9F5);
 
     // Collect all dates with bookings or class sessions of enrolled courses
     final highlightedDays = <DateTime>{};
@@ -106,21 +126,39 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
         enrolledCoursesAsync.isLoading;
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: const Color(0xFFF7F9FC),
       appBar: AppBar(
-        title: Text(AppStrings.schedule),
+        title: Text(
+          'ตารางเรียน',
+          style: GoogleFonts.notoSansThai(
+            fontWeight: FontWeight.bold,
+            fontSize: 18.sp,
+            color: textDarkColor,
+          ),
+        ),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: true,
       ),
       body: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
         child: Column(
           children: [
-            // Calendar
+            // Calendar Card
             Padding(
-              padding: EdgeInsets.all(AppTheme.spacingMd),
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
               child: Container(
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-                  color: AppTheme.surfaceColor,
-                  boxShadow: AppTheme.softShadow,
+                  borderRadius: BorderRadius.circular(16.r),
+                  color: Colors.white,
+                  border: Border.all(color: const Color(0xFFEDF2F7), width: 1),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.03),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
                 child: TableCalendar(
                   firstDay: DateTime.utc(2020, 1, 1),
@@ -140,62 +178,108 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
                     }
                     return [];
                   },
+                  daysOfWeekStyle: DaysOfWeekStyle(
+                    weekdayStyle: GoogleFonts.notoSansThai(
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w600,
+                      color: textDarkColor,
+                    ),
+                    weekendStyle: GoogleFonts.notoSansThai(
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFFFF7EB3),
+                    ),
+                  ),
                   calendarStyle: CalendarStyle(
-                    selectedDecoration: BoxDecoration(
-                      color: AppTheme.primaryColor,
+                    selectedDecoration: const BoxDecoration(
+                      color: brandTeal,
                       shape: BoxShape.circle,
                     ),
-                    todayDecoration: BoxDecoration(
-                      color: AppTheme.primaryColor.withOpacity(0.3),
+                    todayDecoration: const BoxDecoration(
+                      color: brandTealLight,
                       shape: BoxShape.circle,
                     ),
-                    defaultTextStyle: TextStyle(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w500,
+                    todayTextStyle: GoogleFonts.poppins(
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.bold,
+                      color: brandTeal,
                     ),
-                    weekendTextStyle: TextStyle(
-                      fontSize: 14.sp,
+                    selectedTextStyle: GoogleFonts.poppins(
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                    defaultTextStyle: GoogleFonts.poppins(
+                      fontSize: 13.sp,
                       fontWeight: FontWeight.w500,
-                      color: AppTheme.errorColor,
+                      color: textDarkColor,
+                    ),
+                    weekendTextStyle: GoogleFonts.poppins(
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFFFF7EB3),
+                    ),
+                    outsideTextStyle: GoogleFonts.poppins(
+                      fontSize: 13.sp,
+                      color: const Color(0xFFA0AEC0),
+                    ),
+                    markerDecoration: const BoxDecoration(
+                      color: brandTeal,
+                      shape: BoxShape.circle,
                     ),
                   ),
                   headerStyle: HeaderStyle(
                     formatButtonVisible: false,
                     titleCentered: true,
-                    titleTextStyle: TextStyle(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w600,
+                    leftChevronIcon: const Icon(
+                      Icons.chevron_left_rounded,
+                      color: brandTeal,
                     ),
-                    leftChevronIcon: Icon(
-                      Icons.chevron_left,
-                      color: AppTheme.primaryColor,
-                    ),
-                    rightChevronIcon: Icon(
-                      Icons.chevron_right,
-                      color: AppTheme.primaryColor,
+                    rightChevronIcon: const Icon(
+                      Icons.chevron_right_rounded,
+                      color: brandTeal,
                     ),
                   ),
                   calendarBuilders: CalendarBuilders(
+                    headerTitleBuilder: (context, date) {
+                      final monthsTh = [
+                        'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+                        'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
+                      ];
+                      return Center(
+                        child: Text(
+                          '${monthsTh[date.month - 1]} ${date.year}',
+                          style: GoogleFonts.notoSansThai(
+                            fontSize: 15.sp,
+                            fontWeight: FontWeight.bold,
+                            color: textDarkColor,
+                          ),
+                        ),
+                      );
+                    },
                     defaultBuilder: (context, day, focusedDay) {
                       final normalizedDay = DateTime(day.year, day.month, day.day);
                       if (highlightedDays.contains(normalizedDay)) {
+                        final isSelected = isSameDay(_selectedDay, day);
+                        if (isSelected) return null;
+
                         return Container(
                           margin: const EdgeInsets.all(4.0),
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
-                            color: AppTheme.primaryColor.withOpacity(0.12),
+                            color: brandTealLight,
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: AppTheme.primaryColor.withOpacity(0.5),
+                              color: brandTeal.withValues(alpha: 0.35),
                               width: 1,
                             ),
                           ),
                           child: Text(
                             '${day.day}',
-                            style: TextStyle(
-                              fontSize: 14.sp,
+                            style: GoogleFonts.poppins(
+                              fontSize: 13.sp,
                               fontWeight: FontWeight.bold,
-                              color: AppTheme.primaryColor,
+                              color: brandTeal,
                             ),
                           ),
                         );
@@ -209,19 +293,19 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
                           margin: const EdgeInsets.all(4.0),
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
-                            color: AppTheme.primaryColor.withOpacity(0.05),
+                            color: const Color(0xFFF7F9FC),
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: AppTheme.primaryColor.withOpacity(0.25),
+                              color: const Color(0xFFE2E8F0),
                               width: 1,
                             ),
                           ),
                           child: Text(
                             '${day.day}',
-                            style: TextStyle(
-                              fontSize: 14.sp,
+                            style: GoogleFonts.poppins(
+                              fontSize: 13.sp,
                               fontWeight: FontWeight.w500,
-                              color: AppTheme.primaryColor.withOpacity(0.5),
+                              color: const Color(0xFFA0AEC0),
                             ),
                           ),
                         );
@@ -233,34 +317,43 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
               ),
             ),
 
-            // Sessions Header for Selected Date
+            // Sessions Header Section
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: AppTheme.spacingMd, vertical: 12.h),
+              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Expanded(
                     child: Text(
-                      'Schedule on ${_formatSelectedDate(selectedDate)}',
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                      maxLines: 2,
+                      _formatSelectedDateThai(selectedDate),
+                      style: GoogleFonts.notoSansThai(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.bold,
+                        color: textDarkColor,
+                      ),
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   if (displayItems.isNotEmpty)
-                    Text(
-                      '${displayItems.length} session(s)',
-                      style: TextStyle(
-                        fontSize: 14.sp,
-                        color: AppTheme.primaryColor,
-                        fontWeight: FontWeight.bold,
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                      decoration: BoxDecoration(
+                        color: brandTealLight,
+                        borderRadius: BorderRadius.circular(10.r),
+                      ),
+                      child: Text(
+                        '${displayItems.length} คลาส',
+                        style: GoogleFonts.notoSansThai(
+                          fontSize: 11.sp,
+                          color: brandTeal,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                 ],
               ),
             ),
+            SizedBox(height: 8.h),
 
             if (isLoading)
               const Padding(
@@ -269,18 +362,29 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
               )
             else if (displayItems.isEmpty)
               Padding(
-                padding: EdgeInsets.symmetric(vertical: 32.h),
+                padding: EdgeInsets.symmetric(vertical: 48.h),
                 child: Column(
                   children: [
-                    Icon(
-                      Icons.calendar_today,
-                      size: 48.sp,
-                      color: AppTheme.lightGrey,
+                    Container(
+                      padding: EdgeInsets.all(16.w),
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.calendar_today_rounded,
+                        size: 36.sp,
+                        color: const Color(0xFFA0AEC0),
+                      ),
                     ),
                     SizedBox(height: 12.h),
                     Text(
-                      'No sessions on this day',
-                      style: Theme.of(context).textTheme.bodyLarge,
+                      'ไม่มีตารางเรียนในวันนี้',
+                      style: GoogleFonts.notoSansThai(
+                        fontSize: 13.sp,
+                        color: textMidColor,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ],
                 ),
@@ -289,7 +393,7 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
               ListView.builder(
                 physics: const NeverScrollableScrollPhysics(),
                 shrinkWrap: true,
-                padding: EdgeInsets.symmetric(horizontal: AppTheme.spacingMd),
+                padding: EdgeInsets.symmetric(horizontal: 16.w),
                 itemCount: displayItems.length,
                 itemBuilder: (context, index) {
                   return Padding(
@@ -318,98 +422,112 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
     final session = item as ClassSession;
     final course = courses.where((c) => c.id == session.courseId).firstOrNull;
 
-    final courseName = course?.name ?? 'Live Class Session';
+    final courseName = course?.name ?? 'คลาสเรียนบรรยายสด (Live)';
     final sessionType = session.sessionType;
     final startTime = session.startTime;
     final endTime = session.endTime;
 
     final timeStr = '${startTime.hour.toString().padLeft(2, '0')}:${startTime.minute.toString().padLeft(2, '0')} - '
-        '${endTime.hour.toString().padLeft(2, '0')}:${endTime.minute.toString().padLeft(2, '0')}';
+        '${endTime.hour.toString().padLeft(2, '0')}:${endTime.minute.toString().padLeft(2, '0')} น.';
 
-    final dateStr = _formatSelectedDate(startTime);
+    final categoryColor = _getCategoryColor(courseName);
+    const textDarkColor = Color(0xFF1A1F36);
+    const textMidColor = Color(0xFF6E7A9A);
+    const brandTeal = Color(0xFF2DC9A8);
+    const brandTealLight = Color(0xFFE6F9F5);
 
     return Container(
-      padding: EdgeInsets.all(AppTheme.spacingMd),
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-        color: AppTheme.surfaceColor,
-        boxShadow: AppTheme.softShadow,
+        borderRadius: BorderRadius.circular(14.r),
+        color: Colors.white,
+        border: Border.all(color: const Color(0xFFEDF2F7), width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
-      child: Column(
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Column(
+          // Vertical Accent Indicator Bar (Google Calendar style)
+          Container(
+            width: 4.w,
+            height: 48.h,
+            margin: EdgeInsets.only(top: 2.h),
+            decoration: BoxDecoration(
+              color: categoryColor,
+              borderRadius: BorderRadius.circular(2.r),
+            ),
+          ),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      courseName,
-                      style: TextStyle(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w600,
-                        color: AppTheme.darkGrey,
+                    Expanded(
+                      child: Text(
+                        courseName,
+                        style: GoogleFonts.notoSansThai(
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.bold,
+                          color: textDarkColor,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    SizedBox(height: 4.h),
-                    Text(
-                      'Instructor • ${sessionType.toUpperCase()}',
-                      style: TextStyle(
-                        fontSize: 13.sp,
-                        fontWeight: FontWeight.w400,
-                        color: AppTheme.mediumGrey,
+                    SizedBox(width: 8.w),
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(6.r),
+                        color: brandTealLight,
+                      ),
+                      child: Text(
+                        'UPCOMING',
+                        style: GoogleFonts.poppins(
+                          fontSize: 10.sp,
+                          fontWeight: FontWeight.bold,
+                          color: brandTeal,
+                          letterSpacing: 0.5,
+                        ),
                       ),
                     ),
                   ],
                 ),
-              ),
-              Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: 12.w,
-                  vertical: 6.h,
-                ),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(AppTheme.radiusSm),
-                  color: AppTheme.primaryColor.withOpacity(0.1),
-                ),
-                child: Text(
-                  'UPCOMING',
-                  style: TextStyle(
+                SizedBox(height: 6.h),
+                Text(
+                  'คลาสสอนสด • ${sessionType.toUpperCase()}',
+                  style: GoogleFonts.notoSansThai(
                     fontSize: 12.sp,
-                    fontWeight: FontWeight.w700,
-                    color: AppTheme.primaryColor,
+                    fontWeight: FontWeight.w500,
+                    color: textMidColor,
                   ),
                 ),
-              ),
-            ],
-          ),
-          SizedBox(height: 12.h),
-          Row(
-            children: [
-              Icon(Icons.calendar_today, size: 16.sp, color: AppTheme.primaryColor),
-              SizedBox(width: 8.w),
-              Text(
-                dateStr,
-                style: TextStyle(
-                  fontSize: 13.sp,
-                  fontWeight: FontWeight.w500,
-                  color: AppTheme.darkGrey,
+                SizedBox(height: 10.h),
+                Row(
+                  children: [
+                    Icon(Icons.access_time_rounded, size: 14.sp, color: brandTeal),
+                    SizedBox(width: 6.w),
+                    Text(
+                      timeStr,
+                      style: GoogleFonts.poppins(
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w600,
+                        color: textDarkColor,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-              SizedBox(width: 16.w),
-              Icon(Icons.access_time, size: 16.sp, color: AppTheme.primaryColor),
-              SizedBox(width: 8.w),
-              Text(
-                timeStr,
-                style: TextStyle(
-                  fontSize: 13.sp,
-                  fontWeight: FontWeight.w500,
-                  color: AppTheme.darkGrey,
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
@@ -428,98 +546,113 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
         ? courses.where((c) => c.id == session.courseId).firstOrNull
         : null;
 
-    final courseName = course?.name ?? 'Live Class Session';
+    final courseName = course?.name ?? 'คลาสเรียนบรรยายสด (Live)';
     final sessionType = session?.sessionType ?? 'online';
     final startTime = session?.startTime ?? booking.bookingDate ?? DateTime.now();
     final endTime = session?.endTime ?? startTime.add(const Duration(hours: 1));
 
     final timeStr = '${startTime.hour.toString().padLeft(2, '0')}:${startTime.minute.toString().padLeft(2, '0')} - '
-        '${endTime.hour.toString().padLeft(2, '0')}:${endTime.minute.toString().padLeft(2, '0')}';
+        '${endTime.hour.toString().padLeft(2, '0')}:${endTime.minute.toString().padLeft(2, '0')} น.';
 
-    final dateStr = _formatSelectedDate(startTime);
+    final categoryColor = _getCategoryColor(courseName);
+    const textDarkColor = Color(0xFF1A1F36);
+    const textMidColor = Color(0xFF6E7A9A);
+    const brandTeal = Color(0xFF2DC9A8);
+    const statusGreen = Color(0xFF10B981);
+    const statusGreenLight = Color(0xFFD1FAE5);
 
     return Container(
-      padding: EdgeInsets.all(AppTheme.spacingMd),
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-        color: AppTheme.surfaceColor,
-        boxShadow: AppTheme.softShadow,
+        borderRadius: BorderRadius.circular(14.r),
+        color: Colors.white,
+        border: Border.all(color: const Color(0xFFEDF2F7), width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
-      child: Column(
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Column(
+          // Vertical Accent Indicator Bar (Google Calendar style)
+          Container(
+            width: 4.w,
+            height: 48.h,
+            margin: EdgeInsets.only(top: 2.h),
+            decoration: BoxDecoration(
+              color: categoryColor,
+              borderRadius: BorderRadius.circular(2.r),
+            ),
+          ),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      courseName,
-                      style: TextStyle(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w600,
-                        color: AppTheme.darkGrey,
+                    Expanded(
+                      child: Text(
+                        courseName,
+                        style: GoogleFonts.notoSansThai(
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.bold,
+                          color: textDarkColor,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    SizedBox(height: 4.h),
-                    Text(
-                      'Instructor • ${sessionType.toUpperCase()}',
-                      style: TextStyle(
-                        fontSize: 13.sp,
-                        fontWeight: FontWeight.w400,
-                        color: AppTheme.mediumGrey,
+                    SizedBox(width: 8.w),
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(6.r),
+                        color: statusGreenLight,
+                      ),
+                      child: Text(
+                        booking.status.toUpperCase(),
+                        style: GoogleFonts.poppins(
+                          fontSize: 10.sp,
+                          fontWeight: FontWeight.bold,
+                          color: statusGreen,
+                          letterSpacing: 0.5,
+                        ),
                       ),
                     ),
                   ],
                 ),
-              ),
-              Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: 12.w,
-                  vertical: 6.h,
-                ),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(AppTheme.radiusSm),
-                  color: AppTheme.successColor.withOpacity(0.1),
-                ),
-                child: Text(
-                  booking.status.toUpperCase(),
-                  style: TextStyle(
+                SizedBox(height: 6.h),
+                Text(
+                  'คลาสที่จองไว้ • ${sessionType.toUpperCase()}',
+                  style: GoogleFonts.notoSansThai(
                     fontSize: 12.sp,
-                    fontWeight: FontWeight.w700,
-                    color: AppTheme.successColor,
+                    fontWeight: FontWeight.w500,
+                    color: textMidColor,
                   ),
                 ),
-              ),
-            ],
-          ),
-          SizedBox(height: 12.h),
-          Row(
-            children: [
-              Icon(Icons.calendar_today, size: 16.sp, color: AppTheme.primaryColor),
-              SizedBox(width: 8.w),
-              Text(
-                dateStr,
-                style: TextStyle(
-                  fontSize: 13.sp,
-                  fontWeight: FontWeight.w500,
-                  color: AppTheme.darkGrey,
+                SizedBox(height: 10.h),
+                Row(
+                  children: [
+                    Icon(Icons.access_time_rounded, size: 14.sp, color: brandTeal),
+                    SizedBox(width: 6.w),
+                    Text(
+                      timeStr,
+                      style: GoogleFonts.poppins(
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w600,
+                        color: textDarkColor,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-              SizedBox(width: 16.w),
-              Icon(Icons.access_time, size: 16.sp, color: AppTheme.primaryColor),
-              SizedBox(width: 8.w),
-              Text(
-                timeStr,
-                style: TextStyle(
-                  fontSize: 13.sp,
-                  fontWeight: FontWeight.w500,
-                  color: AppTheme.darkGrey,
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
