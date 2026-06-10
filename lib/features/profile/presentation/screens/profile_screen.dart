@@ -56,16 +56,6 @@ class ProfileScreen extends ConsumerWidget {
                   'คอร์สเรียนของฉัน (My Learning)',
                   Icons.school_rounded,
                   () => context.go('/home/learning'),
-                ),
-                _buildMenuItem(
-                  AppStrings.changePassword,
-                  Icons.lock_rounded,
-                  () {},
-                ),
-                _buildMenuItem(
-                  'ช่องทางการชำระเงิน',
-                  Icons.payment_rounded,
-                  () {},
                   isLast: true,
                 ),
               ],
@@ -77,18 +67,8 @@ class ProfileScreen extends ConsumerWidget {
               'แอปพลิเคชัน',
               [
                 _buildMenuItem(
-                  AppStrings.settings,
-                  Icons.settings_rounded,
-                  () => context.go('/home/profile/settings'),
-                ),
-                _buildMenuItem(
                   AppStrings.helpSupport,
                   Icons.help_rounded,
-                  () {},
-                ),
-                _buildMenuItem(
-                  AppStrings.about,
-                  Icons.info_rounded,
                   () {},
                   isLast: true,
                 ),
