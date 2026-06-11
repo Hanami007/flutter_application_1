@@ -23,25 +23,40 @@ class LessonTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
+      duration: const Duration(milliseconds: 250),
+      margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 5.h),
       decoration: BoxDecoration(
         color: isSelected
-            ? AppTheme.primaryColor.withOpacity(0.1)
-            : AppTheme.surfaceColor,
-        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+            ? AppTheme.primaryColor.withOpacity(0.06)
+            : Colors.white,
+        borderRadius: BorderRadius.circular(16.r),
         border: Border.all(
           color: isSelected
-              ? AppTheme.primaryColor.withOpacity(0.4)
-              : AppTheme.lightGrey,
+              ? AppTheme.primaryColor.withOpacity(0.3)
+              : const Color(0xFFE2E8F0),
           width: isSelected ? 1.5 : 1,
         ),
+        boxShadow: isSelected
+            ? [
+                BoxShadow(
+                  color: AppTheme.primaryColor.withOpacity(0.08),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ]
+            : [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.015),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
       ),
       child: InkWell(
         onTap: isLocked ? null : onTap,
-        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+        borderRadius: BorderRadius.circular(16.r),
         child: Padding(
-          padding: EdgeInsets.all(12.w),
+          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
           child: Row(
             children: [
               // Status Icon
@@ -58,19 +73,15 @@ class LessonTile extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         fontSize: 13.sp,
-                        fontWeight: isSelected
-                            ? FontWeight.w700
-                            : FontWeight.w500,
-                        color: isLocked
-                            ? AppTheme.mediumGrey
-                            : AppTheme.darkGrey,
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                        color: isLocked ? AppTheme.mediumGrey : AppTheme.darkGrey,
                       ),
                     ),
                     SizedBox(height: 4.h),
                     Row(
                       children: [
                         Icon(
-                          Icons.schedule,
+                          Icons.schedule_rounded,
                           size: 12.sp,
                           color: AppTheme.mediumGrey,
                         ),
@@ -80,6 +91,7 @@ class LessonTile extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 11.sp,
                             color: AppTheme.mediumGrey,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                         if (isWatched) ...[
@@ -89,14 +101,13 @@ class LessonTile extends StatelessWidget {
                                 horizontal: 6.w, vertical: 2.h),
                             decoration: BoxDecoration(
                               color: AppTheme.successColor.withOpacity(0.12),
-                              borderRadius:
-                                  BorderRadius.circular(AppTheme.radiusSm),
+                              borderRadius: BorderRadius.circular(6.r),
                             ),
                             child: Text(
-                              'Completed',
+                              'เสร็จสิ้น',
                               style: TextStyle(
-                                fontSize: 10.sp,
-                                fontWeight: FontWeight.w600,
+                                fontSize: 9.5.sp,
+                                fontWeight: FontWeight.bold,
                                 color: AppTheme.successColor,
                               ),
                             ),
@@ -119,13 +130,13 @@ class LessonTile extends StatelessWidget {
       return Container(
         width: 36.w,
         height: 36.w,
-        decoration: BoxDecoration(
-          color: AppTheme.lightGrey,
+        decoration: const BoxDecoration(
+          color: Color(0xFFF1F5F9),
           shape: BoxShape.circle,
         ),
         child: Icon(
-          Icons.lock_outline,
-          size: 18.sp,
+          Icons.lock_outline_rounded,
+          size: 16.sp,
           color: AppTheme.mediumGrey,
         ),
       );
@@ -136,12 +147,12 @@ class LessonTile extends StatelessWidget {
         width: 36.w,
         height: 36.w,
         decoration: BoxDecoration(
-          color: AppTheme.successColor.withOpacity(0.15),
+          color: AppTheme.successColor.withOpacity(0.12),
           shape: BoxShape.circle,
         ),
         child: Icon(
-          Icons.check_circle,
-          size: 20.sp,
+          Icons.check_circle_rounded,
+          size: 18.sp,
           color: AppTheme.successColor,
         ),
       );
@@ -150,13 +161,13 @@ class LessonTile extends StatelessWidget {
     IconData getIconData() {
       switch (lesson.contentType) {
         case 'text':
-          return isSelected ? Icons.chrome_reader_mode : Icons.description_outlined;
+          return Icons.article_rounded;
         case 'assignment':
-          return isSelected ? Icons.assignment_turned_in : Icons.assignment_outlined;
+          return Icons.assignment_rounded;
         case 'quiz':
-          return isSelected ? Icons.quiz : Icons.quiz_outlined;
+          return Icons.quiz_rounded;
         default:
-          return isSelected ? Icons.play_arrow : Icons.play_circle_outline;
+          return Icons.play_arrow_rounded;
       }
     }
 
@@ -165,10 +176,19 @@ class LessonTile extends StatelessWidget {
         width: 36.w,
         height: 36.w,
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [AppTheme.primaryColor, AppTheme.secondaryColor],
+          gradient: const LinearGradient(
+            colors: [AppTheme.primaryColor, Color(0xFF8B5CF6)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
           shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: AppTheme.primaryColor.withOpacity(0.25),
+              blurRadius: 6,
+              offset: const Offset(0, 3),
+            ),
+          ],
         ),
         child: Icon(
           getIconData(),
@@ -182,12 +202,12 @@ class LessonTile extends StatelessWidget {
       width: 36.w,
       height: 36.w,
       decoration: BoxDecoration(
-        color: AppTheme.primaryColor.withOpacity(0.1),
+        color: AppTheme.primaryColor.withOpacity(0.08),
         shape: BoxShape.circle,
       ),
       child: Icon(
         getIconData(),
-        size: 18.sp,
+        size: 16.sp,
         color: AppTheme.primaryColor,
       ),
     );

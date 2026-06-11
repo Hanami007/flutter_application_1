@@ -16,6 +16,7 @@ import '../widgets/completion_banner.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../notifications/domain/entities/app_notification.dart';
 import '../../../notifications/domain/providers/notification_provider.dart';
+import 'package:learn_hub/shared/widgets/common_widgets.dart';
 
 /// Full course learning screen with video player, lesson list, and progress tracking.
 class CoursePlayerScreen extends ConsumerStatefulWidget {
@@ -210,10 +211,10 @@ class _CoursePlayerScreenState extends ConsumerState<CoursePlayerScreen>
         data: (course) => lessonsAsync.when(
           data: (lessons) => _buildContent(
               course, lessons, progressAsync.valueOrNull, watchedIds, isFavorite),
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const Center(child: LoadingWidget(message: 'กำลังโหลดบทเรียน...')),
           error: (e, _) => Center(child: Text(e.toString())),
         ),
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(child: LoadingWidget(message: 'กำลังโหลดคอร์ส...')),
         error: (e, _) => Center(child: Text(e.toString())),
       ),
     );
@@ -256,98 +257,94 @@ class _CoursePlayerScreenState extends ConsumerState<CoursePlayerScreen>
     final displayPct =
         progressPct > 1.0 ? progressPct : (progressPct * 100);
 
-    return NestedScrollView(
-      headerSliverBuilder: (context, _) => [
-        SliverAppBar(
-          pinned: true,
-          backgroundColor: AppTheme.darkGrey,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
-            onPressed: () => context.pop(),
-          ),
-          title: Text(
-            course.name,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          actions: [
-            IconButton(
-              icon: Icon(
-                isFavorite ? Icons.favorite : Icons.favorite_border,
-                color: isFavorite ? Colors.red : Colors.white,
-              ),
-              onPressed: () =>
-                  ref.read(favoriteCourseIdsProvider.notifier).toggle(widget.courseId),
-            ),
-          ],
-          // Video Player in the flexible space
-          flexibleSpace: FlexibleSpaceBar(
-            background: _buildVideoPlayer(),
-          ),
-          expandedHeight: 220.h,
-        ),
-      ],
-      body: Column(
+    return SafeArea(
+      child: Column(
         children: [
-          // Progress Bar
-          _buildProgressSection(displayPct, progress),
-
-          // Lesson Navigation & Selector Bar
-          _buildLessonNavigation(lessons, watchedIds),
-
-          // Completion Banner
-          if ((isCompleted || _showCompletionBanner))
-            CompletionBanner(
-              courseName: course.name,
-              onViewCertificate: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content:
-                        Text('Certificate generated! Download feature coming soon.'),
-                  ),
-                );
-              },
-              onReviewCourse: () => _showReviewDialog(context, course.name),
-            ),
-
-          // Tabs
-          Container(
-            color: AppTheme.surfaceColor,
-            child: TabBar(
-              controller: _tabController,
-              labelColor: AppTheme.primaryColor,
-              unselectedLabelColor: AppTheme.mediumGrey,
-              indicatorColor: AppTheme.primaryColor,
-              tabs: [
-                Tab(
-                  child: Text(
-                    'Lessons (${lessons.length})',
-                    style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600),
-                  ),
-                ),
-                Tab(
-                  child: Text(
-                    'About',
-                    style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600),
-                  ),
-                ),
-              ],
-            ),
+          // Pinned Video Player at the top (fixed aspect ratio, stays visible)
+          AspectRatio(
+            aspectRatio: 16 / 9,
+            child: _buildVideoPlayerHeader(course, isFavorite),
           ),
-
+          
+          // Scrollable Content Below Video
           Expanded(
-            child: TabBarView(
-              controller: _tabController,
+            child: Column(
               children: [
-                // Lessons Tab
-                _buildLessonsList(lessons, watchedIds),
-                // About Tab
-                _buildAboutTab(course),
+                // Modern Gradient Progress Card
+                _buildProgressSection(displayPct, progress),
+
+                // Lesson Navigation & Selector Bar
+                _buildLessonNavigation(lessons, watchedIds),
+
+                // Completion Banner
+                if ((isCompleted || _showCompletionBanner))
+                  CompletionBanner(
+                    courseName: course.name,
+                    onViewCertificate: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content:
+                              Text('ระบบดาวน์โหลดเกียรติบัตรกำลังเปิดใช้งานเร็วๆ นี้!'),
+                        ),
+                      );
+                    },
+                    onReviewCourse: () => _showReviewDialog(context, course.name),
+                  ),
+
+                // Premium Segmented TabBar
+                Container(
+                  color: AppTheme.surfaceColor,
+                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                  child: Container(
+                    height: 38.h,
+                    decoration: BoxDecoration(
+                      color: AppTheme.veryLightGrey,
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    child: TabBar(
+                      controller: _tabController,
+                      labelColor: AppTheme.primaryColor,
+                      unselectedLabelColor: AppTheme.mediumGrey,
+                      indicatorSize: TabBarIndicatorSize.tab,
+                      indicator: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10.r),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.04),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      tabs: [
+                        Tab(
+                          child: Text(
+                            'บทเรียน (${lessons.length})',
+                            style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        Tab(
+                          child: Text(
+                            'เกี่ยวกับคอร์ส',
+                            style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // Tabs Content
+                Expanded(
+                  child: TabBarView(
+                    controller: _tabController,
+                    children: [
+                      _buildLessonsList(lessons, watchedIds),
+                      _buildAboutTab(course),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
@@ -362,14 +359,68 @@ class _CoursePlayerScreenState extends ConsumerState<CoursePlayerScreen>
     );
   }
 
+  Widget _buildVideoPlayerHeader(Course course, bool isFavorite) {
+    return Stack(
+      children: [
+        _buildVideoPlayer(),
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.black.withOpacity(0.7), Colors.transparent],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+            ),
+            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 8.h),
+            child: Row(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
+                  onPressed: () => context.pop(),
+                ),
+                SizedBox(width: 4.w),
+                Expanded(
+                  child: Text(
+                    course.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.bold,
+                      shadows: const [
+                        Shadow(color: Colors.black45, blurRadius: 4, offset: Offset(0, 1)),
+                      ],
+                    ),
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(
+                    isFavorite ? Icons.favorite : Icons.favorite_border,
+                    color: isFavorite ? Colors.red : Colors.white,
+                  ),
+                  onPressed: () =>
+                      ref.read(favoriteCourseIdsProvider.notifier).toggle(widget.courseId),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildVideoPlayer() {
     if (_isLoadingVideo) {
       return Container(
         color: Colors.black,
-        child: Center(
+        child: const Center(
           child: CircularProgressIndicator(
-            valueColor:
-                AlwaysStoppedAnimation<Color>(AppTheme.primaryColor),
+            valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryColor),
           ),
         ),
       );
@@ -382,12 +433,11 @@ class _CoursePlayerScreenState extends ConsumerState<CoursePlayerScreen>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.play_circle_outline,
-                  size: 60.sp, color: Colors.white54),
+              Icon(Icons.play_circle_outline_rounded, size: 54.sp, color: Colors.white54),
               SizedBox(height: 8.h),
               Text(
-                'Select a lesson to start',
-                style: TextStyle(color: Colors.white54, fontSize: 14.sp),
+                'กรุณาเลือกบทเรียนเพื่อเริ่มต้นเรียน',
+                style: TextStyle(color: Colors.white54, fontSize: 13.sp, fontWeight: FontWeight.w500),
               ),
             ],
           ),
@@ -399,35 +449,54 @@ class _CoursePlayerScreenState extends ConsumerState<CoursePlayerScreen>
 
     if (type == 'text') {
       return Container(
-        color: AppTheme.darkGrey,
-        padding: EdgeInsets.all(16.w),
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        padding: EdgeInsets.all(20.w),
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.description_rounded, size: 40.sp, color: Colors.white),
-              SizedBox(height: 8.h),
+              Container(
+                padding: EdgeInsets.all(12.w),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.08),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.chrome_reader_mode_rounded, size: 36.sp, color: const Color(0xFF38BDF8)),
+              ),
+              SizedBox(height: 12.h),
               Text(
                 _currentLesson!.title,
                 textAlign: TextAlign.center,
-                maxLines: 1,
+                maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 15.sp,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-              SizedBox(height: 12.h),
+              SizedBox(height: 4.h),
+              Text(
+                'บทเรียนประเภทบทความอ่าน',
+                style: TextStyle(color: Colors.white54, fontSize: 11.sp),
+              ),
+              SizedBox(height: 16.h),
               ElevatedButton.icon(
                 onPressed: () => _showTextContentDialog(context, _currentLesson!),
-                icon: Icon(Icons.chrome_reader_mode_rounded, size: 18.sp),
+                icon: Icon(Icons.menu_book_rounded, size: 16.sp),
                 label: const Text('อ่านเนื้อหาเรียน (Read Lesson)'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.primaryColor,
                   foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                    borderRadius: BorderRadius.circular(12.r),
                   ),
                 ),
               ),
@@ -439,48 +508,62 @@ class _CoursePlayerScreenState extends ConsumerState<CoursePlayerScreen>
 
     if (type == 'assignment') {
       return Container(
-        color: AppTheme.darkGrey,
-        padding: EdgeInsets.all(16.w),
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF2E2416), Color(0xFF1C1307)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        padding: EdgeInsets.all(20.w),
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.assignment_turned_in_rounded, size: 40.sp, color: Colors.amber),
-              SizedBox(height: 8.h),
+              Container(
+                padding: EdgeInsets.all(12.w),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.06),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.assignment_turned_in_rounded, size: 36.sp, color: const Color(0xFFF59E0B)),
+              ),
+              SizedBox(height: 12.h),
               Text(
                 _currentLesson!.title,
                 textAlign: TextAlign.center,
-                maxLines: 1,
+                maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 15.sp,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
               SizedBox(height: 4.h),
               Text(
-                'Assignment Task',
-                style: TextStyle(color: Colors.white70, fontSize: 11.sp),
+                'งานที่ได้รับมอบหมาย (Assignment Task)',
+                style: TextStyle(color: Colors.white54, fontSize: 11.sp),
               ),
-              SizedBox(height: 12.h),
+              SizedBox(height: 16.h),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   ElevatedButton.icon(
                     onPressed: () => _showTextContentDialog(context, _currentLesson!),
-                    icon: Icon(Icons.info_outline, size: 16.sp),
-                    label: const Text('คำอธิบาย (Details)'),
+                    icon: Icon(Icons.info_outline_rounded, size: 16.sp),
+                    label: const Text('คำอธิบายงาน'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white24,
+                      backgroundColor: Colors.white12,
                       foregroundColor: Colors.white,
+                      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                        borderRadius: BorderRadius.circular(12.r),
                       ),
                     ),
                   ),
                   if (_currentLesson!.videoUrl.isNotEmpty) ...[
-                    SizedBox(width: 8.w),
+                    SizedBox(width: 10.w),
                     ElevatedButton.icon(
                       onPressed: () async {
                         final uri = Uri.parse(_currentLesson!.videoUrl);
@@ -493,8 +576,9 @@ class _CoursePlayerScreenState extends ConsumerState<CoursePlayerScreen>
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.successColor,
                         foregroundColor: Colors.white,
+                        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                          borderRadius: BorderRadius.circular(12.r),
                         ),
                       ),
                     ),
@@ -509,26 +593,44 @@ class _CoursePlayerScreenState extends ConsumerState<CoursePlayerScreen>
 
     if (type == 'quiz') {
       return Container(
-        color: AppTheme.darkGrey,
-        padding: EdgeInsets.all(16.w),
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF142035), Color(0xFF0B1220)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        padding: EdgeInsets.all(20.w),
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.quiz_rounded, size: 40.sp, color: AppTheme.secondaryColor),
-              SizedBox(height: 8.h),
+              Container(
+                padding: EdgeInsets.all(12.w),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.06),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.quiz_rounded, size: 36.sp, color: const Color(0xFF8B5CF6)),
+              ),
+              SizedBox(height: 12.h),
               Text(
                 _currentLesson!.title,
                 textAlign: TextAlign.center,
-                maxLines: 1,
+                maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 15.sp,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-              SizedBox(height: 12.h),
+              SizedBox(height: 4.h),
+              Text(
+                'แบบทดสอบความรู้ (Knowledge Quiz)',
+                style: TextStyle(color: Colors.white54, fontSize: 11.sp),
+              ),
+              SizedBox(height: 16.h),
               ElevatedButton.icon(
                 onPressed: () async {
                   if (_currentLesson!.videoUrl.isNotEmpty) {
@@ -543,8 +645,9 @@ class _CoursePlayerScreenState extends ConsumerState<CoursePlayerScreen>
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.successColor,
                   foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                    borderRadius: BorderRadius.circular(12.r),
                   ),
                 ),
               ),
@@ -563,40 +666,46 @@ class _CoursePlayerScreenState extends ConsumerState<CoursePlayerScreen>
 
     if (!_isDirectVideoUrl(_currentLesson!.videoUrl)) {
       return Container(
-        color: AppTheme.darkGrey,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
         child: Center(
           child: Padding(
             padding: EdgeInsets.all(24.w),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  Icons.open_in_new_rounded,
-                  size: 40.sp,
-                  color: Colors.white,
+                Container(
+                  padding: EdgeInsets.all(12.w),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.08),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.open_in_new_rounded, size: 36.sp, color: Colors.white),
                 ),
-                SizedBox(height: 8.h),
+                SizedBox(height: 12.h),
                 Text(
                   _currentLesson!.title,
                   textAlign: TextAlign.center,
-                  maxLines: 1,
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w700,
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
                 SizedBox(height: 4.h),
                 Text(
-                  'This lesson contains an external link/resource.',
+                  'บทเรียนลิงก์ภายนอก (External Link Resource)',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 11.sp,
-                  ),
+                  style: TextStyle(color: Colors.white70, fontSize: 11.sp),
                 ),
-                SizedBox(height: 12.h),
+                SizedBox(height: 16.h),
                 ElevatedButton.icon(
                   onPressed: () async {
                     final uri = Uri.parse(_currentLesson!.videoUrl);
@@ -604,20 +713,14 @@ class _CoursePlayerScreenState extends ConsumerState<CoursePlayerScreen>
                       await launchUrl(uri, mode: LaunchMode.externalApplication);
                     }
                   },
-                  icon: Icon(Icons.school, size: 16.sp),
-                  label: Text(
-                    'ไปที่บทเรียน (Open Link)',
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
+                  icon: Icon(Icons.school_rounded, size: 16.sp),
+                  label: const Text('เปิดลิงก์เรียนรู้เพิ่มเติม'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.successColor,
                     foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                    padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                      borderRadius: BorderRadius.circular(12.r),
                     ),
                   ),
                 ),
@@ -634,12 +737,11 @@ class _CoursePlayerScreenState extends ConsumerState<CoursePlayerScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.play_circle_outline,
-                size: 60.sp, color: Colors.white54),
+            Icon(Icons.play_circle_outline_rounded, size: 54.sp, color: Colors.white54),
             SizedBox(height: 8.h),
             Text(
-              'Select a lesson to start',
-              style: TextStyle(color: Colors.white54, fontSize: 14.sp),
+              'เลือกบทเรียนเพื่อเริ่มเรียน',
+              style: TextStyle(color: Colors.white54, fontSize: 13.sp),
             ),
           ],
         ),
@@ -651,26 +753,39 @@ class _CoursePlayerScreenState extends ConsumerState<CoursePlayerScreen>
     showDialog(
       context: context,
       builder: (context) {
+        final isAssignment = lesson.contentType == 'assignment';
         return AlertDialog(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+            borderRadius: BorderRadius.circular(20.r),
           ),
-          backgroundColor: AppTheme.surfaceColor,
+          backgroundColor: Colors.white,
+          surfaceTintColor: Colors.white,
+          titlePadding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 10.h),
+          contentPadding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
+          actionsPadding: EdgeInsets.fromLTRB(10.w, 5.h, 16.w, 16.h),
           title: Row(
             children: [
-              Icon(
-                lesson.contentType == 'assignment'
-                    ? Icons.assignment_rounded
-                    : Icons.description_rounded,
-                color: AppTheme.primaryColor,
+              Container(
+                padding: EdgeInsets.all(8.w),
+                decoration: BoxDecoration(
+                  color: isAssignment
+                      ? const Color(0xFFFBBF24).withOpacity(0.12)
+                      : AppTheme.primaryColor.withOpacity(0.12),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  isAssignment ? Icons.assignment_rounded : Icons.description_rounded,
+                  color: isAssignment ? const Color(0xFFD97706) : AppTheme.primaryColor,
+                  size: 20.sp,
+                ),
               ),
-              SizedBox(width: 8.w),
+              SizedBox(width: 10.w),
               Expanded(
                 child: Text(
                   lesson.title,
                   style: TextStyle(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w700,
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.bold,
                     color: AppTheme.darkGrey,
                   ),
                 ),
@@ -678,55 +793,81 @@ class _CoursePlayerScreenState extends ConsumerState<CoursePlayerScreen>
             ],
           ),
           content: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (lesson.description != null && lesson.description!.isNotEmpty) ...[
                   Text(
-                    'Description:',
+                    isAssignment ? 'คำแนะนำ / Instruction' : 'คำอธิบาย / Description',
                     style: TextStyle(
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w700,
+                      fontSize: 11.sp,
+                      fontWeight: FontWeight.bold,
                       color: AppTheme.mediumGrey,
+                      letterSpacing: 0.5,
                     ),
                   ),
-                  SizedBox(height: 4.h),
-                  Text(
-                    lesson.description!,
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      color: AppTheme.darkGrey,
-                      height: 1.5,
+                  SizedBox(height: 6.h),
+                  Container(
+                    width: double.infinity,
+                    padding: EdgeInsets.all(12.w),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF8FAFC),
+                      borderRadius: BorderRadius.circular(12.r),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                    ),
+                    child: Text(
+                      lesson.description!,
+                      style: TextStyle(
+                        fontSize: 13.sp,
+                        color: AppTheme.darkGrey,
+                        height: 1.6,
+                      ),
                     ),
                   ),
                   SizedBox(height: 16.h),
                 ],
                 if (lesson.content != null && lesson.content!.isNotEmpty) ...[
                   Text(
-                    'Content:',
+                    'เนื้อหาบทเรียน / Content',
                     style: TextStyle(
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w700,
+                      fontSize: 11.sp,
+                      fontWeight: FontWeight.bold,
                       color: AppTheme.mediumGrey,
+                      letterSpacing: 0.5,
                     ),
                   ),
-                  SizedBox(height: 4.h),
-                  Text(
-                    lesson.content!,
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      color: AppTheme.darkGrey,
-                      height: 1.5,
+                  SizedBox(height: 6.h),
+                  Container(
+                    width: double.infinity,
+                    padding: EdgeInsets.all(12.w),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF8FAFC),
+                      borderRadius: BorderRadius.circular(12.r),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                    ),
+                    child: Text(
+                      lesson.content!,
+                      style: TextStyle(
+                        fontSize: 13.sp,
+                        color: AppTheme.darkGrey,
+                        height: 1.6,
+                      ),
                     ),
                   ),
                 ] else if (lesson.contentType == 'text') ...[
-                  Text(
-                    'No content description provided.',
-                    style: TextStyle(
-                      fontSize: 13.sp,
-                      fontStyle: FontStyle.italic,
-                      color: AppTheme.mediumGrey,
+                  Center(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 20.h),
+                      child: Text(
+                        'ไม่มีรายละเอียดเนื้อหาเพิ่มเติม',
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          fontStyle: FontStyle.italic,
+                          color: AppTheme.mediumGrey,
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -736,7 +877,14 @@ class _CoursePlayerScreenState extends ConsumerState<CoursePlayerScreen>
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Close'),
+              style: TextButton.styleFrom(
+                foregroundColor: AppTheme.primaryColor,
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
+              ),
+              child: const Text('ปิด (Close)'),
             ),
           ],
         );
@@ -745,58 +893,102 @@ class _CoursePlayerScreenState extends ConsumerState<CoursePlayerScreen>
   }
 
   Widget _buildProgressSection(double displayPct, CourseProgress? progress) {
+    final isCompleted = displayPct >= 100;
     return Container(
-      color: AppTheme.surfaceColor,
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+      margin: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 8.h),
+      padding: EdgeInsets.all(12.w),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: isCompleted
+              ? [const Color(0xFF10B981).withOpacity(0.08), const Color(0xFF059669).withOpacity(0.02)]
+              : [AppTheme.primaryColor.withOpacity(0.08), AppTheme.primaryColor.withOpacity(0.02)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(
+          color: isCompleted
+              ? const Color(0xFF10B981).withOpacity(0.15)
+              : AppTheme.primaryColor.withOpacity(0.15),
+          width: 1.2,
+        ),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              Container(
+                padding: EdgeInsets.all(6.w),
+                decoration: BoxDecoration(
+                  color: isCompleted
+                      ? const Color(0xFF10B981).withOpacity(0.15)
+                      : AppTheme.primaryColor.withOpacity(0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  isCompleted ? Icons.workspace_premium_rounded : Icons.trending_up_rounded,
+                  size: 16.sp,
+                  color: isCompleted ? const Color(0xFF10B981) : AppTheme.primaryColor,
+                ),
+              ),
+              SizedBox(width: 8.w),
               Text(
-                'Your Progress',
+                'ความคืบหน้าการเรียนของคุณ',
                 style: TextStyle(
-                  fontSize: 13.sp,
-                  fontWeight: FontWeight.w600,
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.bold,
                   color: AppTheme.darkGrey,
                 ),
               ),
+              const Spacer(),
               Text(
                 '${displayPct.toStringAsFixed(0)}%',
                 style: TextStyle(
                   fontSize: 14.sp,
-                  fontWeight: FontWeight.w700,
-                  color: displayPct >= 100
-                      ? AppTheme.successColor
-                      : AppTheme.primaryColor,
+                  fontWeight: FontWeight.w800,
+                  color: isCompleted ? const Color(0xFF10B981) : AppTheme.primaryColor,
                 ),
               ),
             ],
           ),
-          SizedBox(height: 6.h),
+          SizedBox(height: 8.h),
           ClipRRect(
-            borderRadius: BorderRadius.circular(4.r),
+            borderRadius: BorderRadius.circular(6.r),
             child: LinearProgressIndicator(
               value: (displayPct / 100).clamp(0.0, 1.0),
-              minHeight: 6.h,
+              minHeight: 8.h,
               backgroundColor: AppTheme.lightGrey,
               valueColor: AlwaysStoppedAnimation<Color>(
-                displayPct >= 100
-                    ? AppTheme.successColor
-                    : AppTheme.primaryColor,
+                displayPct >= 100 ? AppTheme.successColor : AppTheme.primaryColor,
               ),
             ),
           ),
-          if (progress != null)
-            Padding(
-              padding: EdgeInsets.only(top: 4.h),
-              child: Text(
-                '${progress.videosWatched} / ${progress.videosTotal} lessons completed',
-                style:
-                    TextStyle(fontSize: 11.sp, color: AppTheme.mediumGrey),
-              ),
+          if (progress != null) ...[
+            SizedBox(height: 6.h),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'เรียนสำเร็จแล้ว ${progress.videosWatched} จาก ${progress.videosTotal} บทเรียน',
+                  style: TextStyle(
+                    fontSize: 10.sp,
+                    fontWeight: FontWeight.w500,
+                    color: AppTheme.mediumGrey,
+                  ),
+                ),
+                if (isCompleted)
+                  Text(
+                    '🎉 ยินดีด้วยคุณเรียนจบแล้ว!',
+                    style: TextStyle(
+                      fontSize: 10.sp,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.successColor,
+                    ),
+                  ),
+              ],
             ),
+          ],
         ],
       ),
     );
@@ -1028,7 +1220,7 @@ class _CoursePlayerScreenState extends ConsumerState<CoursePlayerScreen>
     final hasNext = currentIdx != -1 && currentIdx < lessons.length - 1;
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
       decoration: BoxDecoration(
         color: AppTheme.surfaceColor,
         border: Border(
@@ -1041,47 +1233,54 @@ class _CoursePlayerScreenState extends ConsumerState<CoursePlayerScreen>
       child: Row(
         children: [
           // Previous Button
-          Container(
-            decoration: BoxDecoration(
-              color: hasPrevious
-                  ? AppTheme.primaryColor.withOpacity(0.1)
-                  : AppTheme.veryLightGrey,
-              shape: BoxShape.circle,
-            ),
-            child: IconButton(
-              icon: Icon(
+          GestureDetector(
+            onTap: hasPrevious ? () => _loadVideo(lessons[currentIdx - 1]) : null,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              padding: EdgeInsets.all(8.w),
+              decoration: BoxDecoration(
+                color: hasPrevious
+                    ? AppTheme.primaryColor.withOpacity(0.1)
+                    : AppTheme.veryLightGrey,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
                 Icons.skip_previous_rounded,
+                size: 20.sp,
                 color: hasPrevious ? AppTheme.primaryColor : AppTheme.mediumGrey,
               ),
-              onPressed: hasPrevious
-                  ? () => _loadVideo(lessons[currentIdx - 1])
-                  : null,
-              tooltip: 'Previous Lesson',
             ),
           ),
-          SizedBox(width: 12.w),
+          SizedBox(width: 10.w),
           
           // Dropdown/Selector Button
           Expanded(
             child: InkWell(
               onTap: () => _showLessonSelectorBottomSheet(context, lessons, watchedIds),
-              borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+              borderRadius: BorderRadius.circular(12.r),
               child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                 decoration: BoxDecoration(
                   color: AppTheme.veryLightGrey,
-                  borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                  borderRadius: BorderRadius.circular(12.r),
                   border: Border.all(
-                    color: AppTheme.lightGrey,
+                    color: AppTheme.lightGrey.withOpacity(0.7),
                     width: 1,
                   ),
                 ),
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.list_alt_rounded,
-                      color: AppTheme.primaryColor,
-                      size: 18.sp,
+                    Container(
+                      padding: EdgeInsets.all(4.w),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primaryColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(6.r),
+                      ),
+                      child: Icon(
+                        Icons.menu_book_rounded,
+                        color: AppTheme.primaryColor,
+                        size: 16.sp,
+                      ),
                     ),
                     SizedBox(width: 8.w),
                     Expanded(
@@ -1091,22 +1290,22 @@ class _CoursePlayerScreenState extends ConsumerState<CoursePlayerScreen>
                         children: [
                           Text(
                             _currentLesson != null
-                                ? 'Lesson ${currentIdx + 1} of ${lessons.length}'
-                                : 'Select Lesson',
+                                ? 'บทเรียนที่ ${currentIdx + 1} จาก ${lessons.length}'
+                                : 'เลือกบทเรียน',
                             style: TextStyle(
-                              fontSize: 10.sp,
-                              fontWeight: FontWeight.w600,
+                              fontSize: 9.sp,
+                              fontWeight: FontWeight.bold,
                               color: AppTheme.mediumGrey,
                             ),
                           ),
-                          SizedBox(height: 2.h),
+                          SizedBox(height: 1.h),
                           Text(
-                            _currentLesson?.title ?? 'Choose a lesson...',
+                            _currentLesson?.title ?? 'กรุณาเลือกบทเรียน...',
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              fontSize: 12.sp,
-                              fontWeight: FontWeight.w700,
+                              fontSize: 11.5.sp,
+                              fontWeight: FontWeight.bold,
                               color: AppTheme.darkGrey,
                             ),
                           ),
@@ -1114,34 +1313,34 @@ class _CoursePlayerScreenState extends ConsumerState<CoursePlayerScreen>
                       ),
                     ),
                     Icon(
-                      Icons.keyboard_arrow_down_rounded,
+                      Icons.unfold_more_rounded,
                       color: AppTheme.mediumGrey,
-                      size: 18.sp,
+                      size: 16.sp,
                     ),
                   ],
                 ),
               ),
             ),
           ),
-          SizedBox(width: 12.w),
+          SizedBox(width: 10.w),
 
           // Next Button
-          Container(
-            decoration: BoxDecoration(
-              color: hasNext
-                  ? AppTheme.primaryColor.withOpacity(0.1)
-                  : AppTheme.veryLightGrey,
-              shape: BoxShape.circle,
-            ),
-            child: IconButton(
-              icon: Icon(
+          GestureDetector(
+            onTap: hasNext ? () => _loadVideo(lessons[currentIdx + 1]) : null,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              padding: EdgeInsets.all(8.w),
+              decoration: BoxDecoration(
+                color: hasNext
+                    ? AppTheme.primaryColor.withOpacity(0.1)
+                    : AppTheme.veryLightGrey,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
                 Icons.skip_next_rounded,
+                size: 20.sp,
                 color: hasNext ? AppTheme.primaryColor : AppTheme.mediumGrey,
               ),
-              onPressed: hasNext
-                  ? () => _loadVideo(lessons[currentIdx + 1])
-                  : null,
-              tooltip: 'Next Lesson',
             ),
           ),
         ],

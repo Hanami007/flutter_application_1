@@ -6,6 +6,7 @@ import '../../../../../core/theme/app_theme.dart';
 import '../../../../../shared/constants/app_strings.dart';
 import '../../../../../shared/widgets/common_widgets.dart' hide ErrorWidget;
 import '../../../../../features/booking/domain/providers/booking_provider.dart';
+import 'package:learn_hub/features/courses/domain/providers/course_provider.dart';
 
 class BookingScreen extends ConsumerStatefulWidget {
   final String courseId;
@@ -303,6 +304,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
   }
 
   Widget _buildBookingSummary(BuildContext context) {
+    final courseAsync = ref.watch(courseDetailsProvider(widget.courseId));
     return Container(
       padding: EdgeInsets.all(AppTheme.spacingMd),
       decoration: BoxDecoration(
@@ -321,7 +323,23 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
           _buildSummaryRow('Date', selectedDate != null ? '${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}' : 'Not selected'),
           _buildSummaryRow('Time', selectedTime ?? 'Not selected'),
           Divider(height: 16.h),
-          _buildSummaryRow('Total Price', '₹5,999', isTotal: true),
+          courseAsync.when(
+            data: (course) => _buildSummaryRow(
+              'Total Price',
+              '฿${course.price.toStringAsFixed(0)}',
+              isTotal: true,
+            ),
+            loading: () => _buildSummaryRow(
+              'Total Price',
+              'Loading...',
+              isTotal: true,
+            ),
+            error: (err, _) => _buildSummaryRow(
+              'Total Price',
+              'Error',
+              isTotal: true,
+            ),
+          ),
         ],
       ),
     );
