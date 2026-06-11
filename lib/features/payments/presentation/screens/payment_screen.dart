@@ -76,7 +76,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
       lastDate: DateTime(2030),
       builder: (context, child) {
         return Theme(
-          data: Theme.of(context).copyWith(
+          data: ThemeData(
             colorScheme: const ColorScheme.light(
               primary: Color(0xFF2DC9A8),
               onPrimary: Colors.white,
@@ -94,7 +94,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
         initialTime: TimeOfDay.now(),
         builder: (context, child) {
           return Theme(
-            data: Theme.of(context).copyWith(
+            data: ThemeData(
               colorScheme: const ColorScheme.light(
                 primary: Color(0xFF2DC9A8),
                 onPrimary: Colors.white,

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/constants/app_strings.dart';
 import '../../../../shared/widgets/common_widgets.dart';
@@ -16,29 +17,47 @@ class LearningScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final enrolledAsync = ref.watch(enrolledCoursesProvider);
+    const textDarkColor = Color(0xFF1A1F36);
+    const brandTeal = Color(0xFF2DC9A8);
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: const Color(0xFFF7F9FC),
       appBar: AppBar(
-        title: Text(AppStrings.myLearning),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.search, color: AppTheme.darkGrey),
-            onPressed: () {},
+        title: Text(
+          'คอร์สเรียนของฉัน',
+          style: GoogleFonts.notoSansThai(
+            fontWeight: FontWeight.bold,
+            fontSize: 17.sp,
+            color: textDarkColor,
           ),
-        ],
+        ),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: true,
       ),
       body: enrolledAsync.when(
         data: (courses) => courses.isEmpty
             ? _buildEmptyState(context)
             : _buildCourseList(context, ref, courses),
-        loading: () => const LoadingWidget(message: 'Loading your courses...'),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        loading: () => const Center(
+          child: CircularProgressIndicator(color: brandTeal),
+        ),
+        error: (e, _) => Center(
+          child: Text(
+            'เกิดข้อผิดพลาด: $e',
+            style: GoogleFonts.notoSansThai(color: Colors.red, fontSize: 13.sp),
+          ),
+        ),
       ),
     );
   }
 
   Widget _buildEmptyState(BuildContext context) {
+    const brandTeal = Color(0xFF2DC9A8);
+    const brandTealLight = Color(0xFFE6F9F5);
+    const textDarkColor = Color(0xFF1A1F36);
+    const textMidColor = Color(0xFF6E7A9A);
+
     return Center(
       child: Padding(
         padding: EdgeInsets.all(32.w),
@@ -48,38 +67,39 @@ class LearningScreen extends ConsumerWidget {
             Container(
               width: 100.w,
               height: 100.w,
-              decoration: BoxDecoration(
-                color: AppTheme.primaryColor.withOpacity(0.1),
+              decoration: const BoxDecoration(
+                color: brandTealLight,
                 shape: BoxShape.circle,
               ),
               child: Icon(
-                Icons.school_outlined,
+                Icons.school_rounded,
                 size: 50.sp,
-                color: AppTheme.primaryColor,
+                color: brandTeal,
               ),
             ),
             SizedBox(height: 24.h),
             Text(
-              'No courses yet',
-              style: TextStyle(
-                fontSize: 20.sp,
-                fontWeight: FontWeight.w700,
-                color: AppTheme.darkGrey,
+              'ยังไม่มีคอร์สเรียนในขณะนี้',
+              style: GoogleFonts.notoSansThai(
+                fontSize: 18.sp,
+                fontWeight: FontWeight.bold,
+                color: textDarkColor,
               ),
             ),
             SizedBox(height: 8.h),
             Text(
-              'Browse our catalog and purchase your first course to start learning.',
+              'เลือกดูคอร์สเรียนทั้งหมดในหมวดหมู่ของเราเพื่อเริ่มต้นเรียนรู้ทันที',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14.sp,
-                color: AppTheme.mediumGrey,
+              style: GoogleFonts.notoSansThai(
+                fontSize: 13.sp,
+                color: textMidColor,
                 height: 1.5,
               ),
             ),
             SizedBox(height: 32.h),
             PrimaryButton(
-              text: 'Browse Courses',
+              text: 'เลือกดูคอร์สเรียนทั้งหมด',
+              backgroundColor: brandTeal,
               onPressed: () => context.go('/home/courses'),
             ),
           ],
@@ -90,7 +110,9 @@ class LearningScreen extends ConsumerWidget {
 
   Widget _buildCourseList(
       BuildContext context, WidgetRef ref, List<Course> courses) {
+    const textDarkColor = Color(0xFF1A1F36);
     return CustomScrollView(
+      physics: const BouncingScrollPhysics(),
       slivers: [
         SliverPadding(
           padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 4.h),
@@ -98,11 +120,11 @@ class LearningScreen extends ConsumerWidget {
             child: Row(
               children: [
                 Text(
-                  '${courses.length} ${courses.length == 1 ? 'Course' : 'Courses'} Enrolled',
-                  style: TextStyle(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w700,
-                    color: AppTheme.darkGrey,
+                  'คอร์สเรียนทั้งหมดที่คุณลงทะเบียน (${courses.length})',
+                  style: GoogleFonts.notoSansThai(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.bold,
+                    color: textDarkColor,
                   ),
                 ),
               ],
@@ -110,7 +132,7 @@ class LearningScreen extends ConsumerWidget {
           ),
         ),
         SliverPadding(
-          padding: EdgeInsets.symmetric(horizontal: 16.w),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
           sliver: SliverList(
             delegate: SliverChildBuilderDelegate(
               (context, index) {
@@ -135,61 +157,76 @@ class _EnrolledCourseCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final progressAsync = ref.watch(courseProgressForCourseProvider(course.id));
-    final isFavorite = ref
-        .watch(favoriteCourseIdsProvider.select((ids) => ids.contains(course.id)));
+    final isFavorite = ref.watch(favoriteCourseIdsProvider.select((ids) => ids.contains(course.id)));
+    const textDarkColor = Color(0xFF1A1F36);
+    const textMidColor = Color(0xFF6E7A9A);
+    const brandTeal = Color(0xFF2DC9A8);
 
     return Container(
       margin: EdgeInsets.only(bottom: 16.h),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceColor,
-        borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-        boxShadow: AppTheme.softShadow,
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: const Color(0xFFEDF2F7), width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: InkWell(
-        borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+        borderRadius: BorderRadius.circular(16.r),
         onTap: () => context.go('/home/learning/${course.id}'),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Thumbnail
             ClipRRect(
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(AppTheme.radiusLg),
-                topRight: Radius.circular(AppTheme.radiusLg),
-              ),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
               child: Stack(
                 children: [
                   CachedNetworkImage(
-                    imageUrl: course.thumbnailUrl ??
-                        'https://placehold.co/400x180',
-                    height: 160.h,
+                    imageUrl: course.thumbnailUrl ?? 'https://placehold.co/400x180',
+                    height: 150.h,
                     width: double.infinity,
                     fit: BoxFit.cover,
                     errorWidget: (_, __, ___) => Container(
-                      height: 160.h,
-                      color: AppTheme.veryLightGrey,
-                      child: Icon(Icons.image_not_supported,
-                          color: AppTheme.mediumGrey),
+                      height: 150.h,
+                      color: const Color(0xFFE6F9F5),
+                      child: const Icon(
+                        Icons.menu_book_rounded,
+                        color: brandTeal,
+                        size: 40,
+                      ),
                     ),
                   ),
                   // Favorite button
                   Positioned(
-                    top: 8.h,
-                    right: 8.w,
+                    top: 10.h,
+                    right: 10.w,
                     child: GestureDetector(
                       onTap: () => ref
                           .read(favoriteCourseIdsProvider.notifier)
                           .toggle(course.id),
                       child: Container(
                         padding: EdgeInsets.all(6.w),
-                        decoration: BoxDecoration(
-                          color: Colors.black45,
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
                           shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black12,
+                              blurRadius: 4,
+                              offset: Offset(0, 2),
+                            ),
+                          ],
                         ),
                         child: Icon(
-                          isFavorite ? Icons.favorite : Icons.favorite_border,
+                          isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
                           size: 18.sp,
-                          color: isFavorite ? Colors.red : Colors.white,
+                          color: isFavorite ? Colors.red : textMidColor,
                         ),
                       ),
                     ),
@@ -208,47 +245,48 @@ class _EnrolledCourseCard extends ConsumerWidget {
                     course.name,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 15.sp,
-                      fontWeight: FontWeight.w700,
-                      color: AppTheme.darkGrey,
+                    style: GoogleFonts.notoSansThai(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.bold,
+                      color: textDarkColor,
+                      height: 1.3,
                     ),
                   ),
-                  SizedBox(height: 4.h),
+                  SizedBox(height: 6.h),
                   Row(
                     children: [
-                      Icon(Icons.star, size: 14.sp, color: Colors.amber),
+                      Icon(Icons.star_rounded, size: 16.sp, color: const Color(0xFFFFC107)),
                       SizedBox(width: 4.w),
                       Text(
                         '${course.rating}',
-                        style: TextStyle(
+                        style: GoogleFonts.poppins(
                           fontSize: 12.sp,
-                          fontWeight: FontWeight.w600,
-                          color: AppTheme.darkGrey,
+                          fontWeight: FontWeight.bold,
+                          color: textDarkColor,
                         ),
                       ),
-                      SizedBox(width: 4.w),
+                      SizedBox(width: 6.w),
                       Text(
-                        '(${course.totalStudents} students)',
-                        style: TextStyle(
+                        '(${course.totalStudents} ผู้เรียน)',
+                        style: GoogleFonts.notoSansThai(
                           fontSize: 11.sp,
-                          color: AppTheme.mediumGrey,
+                          color: textMidColor,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],
                   ),
 
-                  SizedBox(height: 12.h),
+                  SizedBox(height: 14.h),
 
-                  // Progress
+                  // Progress Section
                   progressAsync.when(
-                    data: (progress) =>
-                        _buildProgressSection(context, course, progress),
-                    loading: () => LinearProgressIndicator(
-                      backgroundColor: AppTheme.lightGrey,
+                    data: (progress) => _buildProgressSection(context, course, progress),
+                    loading: () => const LinearProgressIndicator(
+                      color: brandTeal,
+                      backgroundColor: Color(0xFFEDF2F7),
                     ),
-                    error: (_, __) =>
-                        _buildProgressSection(context, course, null),
+                    error: (_, __) => _buildProgressSection(context, course, null),
                   ),
                 ],
               ),
@@ -265,98 +303,113 @@ class _EnrolledCourseCard extends ConsumerWidget {
     CourseProgress? progress,
   ) {
     final pct = progress?.progressPercentage ?? 0.0;
-    // Handle both 0-1 and 0-100 ranges
     final displayPct = pct > 1.0 ? pct : pct * 100;
     final isCompleted = displayPct >= 100;
     final hasStarted = displayPct > 0;
 
-    // Determine button text and color
+    const brandTeal = Color(0xFF2DC9A8);
+    const textDarkColor = Color(0xFF1A1F36);
+    const textMidColor = Color(0xFF6E7A9A);
+
     String buttonText;
     Color buttonColor;
     IconData buttonIcon;
 
     if (isCompleted) {
-      buttonText = 'Review Course';
+      buttonText = 'เขียนรีวิวคอร์สเรียน';
       buttonColor = const Color(0xFFF59E0B); // amber
-      buttonIcon = Icons.replay;
+      buttonIcon = Icons.rate_review_rounded;
     } else if (hasStarted) {
-      buttonText = 'Continue – ${displayPct.toStringAsFixed(0)}%';
-      buttonColor = AppTheme.primaryColor;
-      buttonIcon = Icons.play_arrow;
+      buttonText = 'เรียนต่อจากเดิม (${displayPct.toStringAsFixed(0)}%)';
+      buttonColor = brandTeal;
+      buttonIcon = Icons.play_arrow_rounded;
     } else {
-      buttonText = 'Start Learning';
-      buttonColor = AppTheme.successColor;
-      buttonIcon = Icons.play_circle_outline;
+      buttonText = 'เริ่มเรียนกันเลย';
+      buttonColor = const Color(0xFF0F7A5F); // darker teal
+      buttonIcon = Icons.school_rounded;
     }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Progress bar + percentage
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              isCompleted
-                  ? '✅ Completed'
-                  : hasStarted
-                      ? 'In Progress'
-                      : 'Not Started',
-              style: TextStyle(
-                fontSize: 12.sp,
-                fontWeight: FontWeight.w600,
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+              decoration: BoxDecoration(
                 color: isCompleted
-                    ? AppTheme.successColor
+                    ? const Color(0xFFE6F4EA)
                     : hasStarted
-                        ? AppTheme.primaryColor
-                        : AppTheme.mediumGrey,
+                        ? const Color(0xFFE6F9F5)
+                        : const Color(0xFFF1F5F9),
+                borderRadius: BorderRadius.circular(6.r),
+              ),
+              child: Text(
+                isCompleted
+                    ? 'เรียนจบแล้ว 🎉'
+                    : hasStarted
+                        ? 'กำลังเรียนอยู่'
+                        : 'ยังไม่ได้เริ่ม',
+                style: GoogleFonts.notoSansThai(
+                  fontSize: 10.sp,
+                  fontWeight: FontWeight.bold,
+                  color: isCompleted
+                      ? const Color(0xFF137333)
+                      : hasStarted
+                          ? brandTeal
+                          : textMidColor,
+                ),
               ),
             ),
             if (progress != null)
               Text(
-                '${progress.videosWatched}/${progress.videosTotal} lessons',
-                style:
-                    TextStyle(fontSize: 11.sp, color: AppTheme.mediumGrey),
+                '${progress.videosWatched}/${progress.videosTotal} บทเรียน',
+                style: GoogleFonts.poppins(
+                  fontSize: 11.sp,
+                  color: textMidColor,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
           ],
         ),
-        SizedBox(height: 6.h),
+        SizedBox(height: 8.h),
         ClipRRect(
           borderRadius: BorderRadius.circular(4.r),
           child: LinearProgressIndicator(
             value: (displayPct / 100).clamp(0.0, 1.0),
-            minHeight: 5.h,
-            backgroundColor: AppTheme.lightGrey,
+            minHeight: 6.h,
+            backgroundColor: const Color(0xFFEDF2F7),
             valueColor: AlwaysStoppedAnimation<Color>(
               isCompleted
-                  ? AppTheme.successColor
+                  ? const Color(0xFF10B981)
                   : hasStarted
-                      ? AppTheme.primaryColor
-                      : AppTheme.lightGrey,
+                      ? brandTeal
+                      : const Color(0xFFCBD5E0),
             ),
           ),
         ),
-        SizedBox(height: 12.h),
+        SizedBox(height: 14.h),
         // Action Button
         SizedBox(
           width: double.infinity,
           height: 42.h,
           child: ElevatedButton.icon(
             onPressed: () => context.go('/home/learning/${course.id}'),
-            icon: Icon(buttonIcon, size: 18.sp),
+            icon: Icon(buttonIcon, size: 18.sp, color: Colors.white),
             label: Text(
               buttonText,
-              style: TextStyle(
+              style: GoogleFonts.notoSansThai(
                 fontSize: 13.sp,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
               ),
             ),
             style: ElevatedButton.styleFrom(
               backgroundColor: buttonColor,
-              foregroundColor: Colors.white,
               elevation: 0,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                borderRadius: BorderRadius.circular(12.r),
               ),
             ),
           ),
