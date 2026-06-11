@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme/app_theme.dart';
 
 class PrimaryButton extends StatelessWidget {
@@ -50,9 +51,9 @@ class PrimaryButton extends StatelessWidget {
               )
             : Text(
                 text,
-                style: TextStyle(
+                style: GoogleFonts.notoSansThai(
                   color: textColor ?? Colors.white,
-                  fontSize: 16.sp,
+                  fontSize: 14.sp,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -112,9 +113,9 @@ class OutlineButton extends StatelessWidget {
               )
             : Text(
                 text,
-                style: TextStyle(
+                style: GoogleFonts.notoSansThai(
                   color: textColor ?? AppTheme.primaryColor,
-                  fontSize: 16.sp,
+                  fontSize: 14.sp,
                   fontWeight: FontWeight.w600,
                 ),
               ),

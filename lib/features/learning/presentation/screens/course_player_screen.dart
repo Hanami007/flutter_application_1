@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:video_player/video_player.dart';
 import 'package:chewie/chewie.dart';
@@ -40,6 +41,7 @@ class _CoursePlayerScreenState extends ConsumerState<CoursePlayerScreen>
   VideoLesson? _currentLesson;
   bool _isLoadingVideo = false;
   bool _showCompletionBanner = false;
+  bool _isCompletionDismissed = false;
   late TabController _tabController;
 
   @override
@@ -277,7 +279,7 @@ class _CoursePlayerScreenState extends ConsumerState<CoursePlayerScreen>
                 _buildLessonNavigation(lessons, watchedIds),
 
                 // Completion Banner
-                if ((isCompleted || _showCompletionBanner))
+                if ((isCompleted || _showCompletionBanner) && !_isCompletionDismissed)
                   CompletionBanner(
                     courseName: course.name,
                     onViewCertificate: () {
@@ -289,6 +291,7 @@ class _CoursePlayerScreenState extends ConsumerState<CoursePlayerScreen>
                       );
                     },
                     onReviewCourse: () => _showReviewDialog(context, course.name),
+                    onDismiss: () => setState(() => _isCompletionDismissed = true),
                   ),
 
                 // Premium Segmented TabBar
@@ -437,7 +440,7 @@ class _CoursePlayerScreenState extends ConsumerState<CoursePlayerScreen>
               SizedBox(height: 8.h),
               Text(
                 'กรุณาเลือกบทเรียนเพื่อเริ่มต้นเรียน',
-                style: TextStyle(color: Colors.white54, fontSize: 13.sp, fontWeight: FontWeight.w500),
+                style: GoogleFonts.notoSansThai(color: Colors.white54, fontSize: 13.sp, fontWeight: FontWeight.w500),
               ),
             ],
           ),
@@ -475,7 +478,7 @@ class _CoursePlayerScreenState extends ConsumerState<CoursePlayerScreen>
                 textAlign: TextAlign.center,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(
+                style: GoogleFonts.notoSansThai(
                   color: Colors.white,
                   fontSize: 15.sp,
                   fontWeight: FontWeight.bold,
@@ -484,13 +487,16 @@ class _CoursePlayerScreenState extends ConsumerState<CoursePlayerScreen>
               SizedBox(height: 4.h),
               Text(
                 'บทเรียนประเภทบทความอ่าน',
-                style: TextStyle(color: Colors.white54, fontSize: 11.sp),
+                style: GoogleFonts.notoSansThai(color: Colors.white54, fontSize: 11.sp),
               ),
               SizedBox(height: 16.h),
               ElevatedButton.icon(
                 onPressed: () => _showTextContentDialog(context, _currentLesson!),
                 icon: Icon(Icons.menu_book_rounded, size: 16.sp),
-                label: const Text('อ่านเนื้อหาเรียน (Read Lesson)'),
+                label: Text(
+                  'อ่านเนื้อหาเรียน (Read Lesson)',
+                  style: GoogleFonts.notoSansThai(fontSize: 12.sp, fontWeight: FontWeight.bold),
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.primaryColor,
                   foregroundColor: Colors.white,
@@ -534,7 +540,7 @@ class _CoursePlayerScreenState extends ConsumerState<CoursePlayerScreen>
                 textAlign: TextAlign.center,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(
+                style: GoogleFonts.notoSansThai(
                   color: Colors.white,
                   fontSize: 15.sp,
                   fontWeight: FontWeight.bold,
@@ -543,7 +549,7 @@ class _CoursePlayerScreenState extends ConsumerState<CoursePlayerScreen>
               SizedBox(height: 4.h),
               Text(
                 'งานที่ได้รับมอบหมาย (Assignment Task)',
-                style: TextStyle(color: Colors.white54, fontSize: 11.sp),
+                style: GoogleFonts.notoSansThai(color: Colors.white54, fontSize: 11.sp),
               ),
               SizedBox(height: 16.h),
               Row(
@@ -552,7 +558,10 @@ class _CoursePlayerScreenState extends ConsumerState<CoursePlayerScreen>
                   ElevatedButton.icon(
                     onPressed: () => _showTextContentDialog(context, _currentLesson!),
                     icon: Icon(Icons.info_outline_rounded, size: 16.sp),
-                    label: const Text('คำอธิบายงาน'),
+                    label: Text(
+                      'คำอธิบายงาน',
+                      style: GoogleFonts.notoSansThai(fontSize: 12.sp, fontWeight: FontWeight.bold),
+                    ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white12,
                       foregroundColor: Colors.white,
@@ -572,7 +581,10 @@ class _CoursePlayerScreenState extends ConsumerState<CoursePlayerScreen>
                         }
                       },
                       icon: Icon(Icons.open_in_new_rounded, size: 16.sp),
-                      label: const Text('ลิงก์งาน (Link)'),
+                      label: Text(
+                        'ลิงก์งาน (Link)',
+                        style: GoogleFonts.notoSansThai(fontSize: 12.sp, fontWeight: FontWeight.bold),
+                      ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.successColor,
                         foregroundColor: Colors.white,
@@ -619,7 +631,7 @@ class _CoursePlayerScreenState extends ConsumerState<CoursePlayerScreen>
                 textAlign: TextAlign.center,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(
+                style: GoogleFonts.notoSansThai(
                   color: Colors.white,
                   fontSize: 15.sp,
                   fontWeight: FontWeight.bold,
@@ -628,7 +640,7 @@ class _CoursePlayerScreenState extends ConsumerState<CoursePlayerScreen>
               SizedBox(height: 4.h),
               Text(
                 'แบบทดสอบความรู้ (Knowledge Quiz)',
-                style: TextStyle(color: Colors.white54, fontSize: 11.sp),
+                style: GoogleFonts.notoSansThai(color: Colors.white54, fontSize: 11.sp),
               ),
               SizedBox(height: 16.h),
               ElevatedButton.icon(
@@ -641,7 +653,10 @@ class _CoursePlayerScreenState extends ConsumerState<CoursePlayerScreen>
                   }
                 },
                 icon: Icon(Icons.play_arrow_rounded, size: 18.sp),
-                label: const Text('เริ่มทำแบบทดสอบ (Start Quiz)'),
+                label: Text(
+                  'เริ่มทำแบบทดสอบ (Start Quiz)',
+                  style: GoogleFonts.notoSansThai(fontSize: 12.sp, fontWeight: FontWeight.bold),
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.successColor,
                   foregroundColor: Colors.white,
@@ -693,7 +708,7 @@ class _CoursePlayerScreenState extends ConsumerState<CoursePlayerScreen>
                   textAlign: TextAlign.center,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
+                  style: GoogleFonts.notoSansThai(
                     color: Colors.white,
                     fontSize: 15.sp,
                     fontWeight: FontWeight.bold,
@@ -703,7 +718,7 @@ class _CoursePlayerScreenState extends ConsumerState<CoursePlayerScreen>
                 Text(
                   'บทเรียนลิงก์ภายนอก (External Link Resource)',
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.white70, fontSize: 11.sp),
+                  style: GoogleFonts.notoSansThai(color: Colors.white70, fontSize: 11.sp),
                 ),
                 SizedBox(height: 16.h),
                 ElevatedButton.icon(
@@ -714,7 +729,10 @@ class _CoursePlayerScreenState extends ConsumerState<CoursePlayerScreen>
                     }
                   },
                   icon: Icon(Icons.school_rounded, size: 16.sp),
-                  label: const Text('เปิดลิงก์เรียนรู้เพิ่มเติม'),
+                  label: Text(
+                    'เปิดลิงก์เรียนรู้เพิ่มเติม',
+                    style: GoogleFonts.notoSansThai(fontSize: 12.sp, fontWeight: FontWeight.bold),
+                  ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.successColor,
                     foregroundColor: Colors.white,
@@ -741,13 +759,14 @@ class _CoursePlayerScreenState extends ConsumerState<CoursePlayerScreen>
             SizedBox(height: 8.h),
             Text(
               'เลือกบทเรียนเพื่อเริ่มเรียน',
-              style: TextStyle(color: Colors.white54, fontSize: 13.sp),
+              style: GoogleFonts.notoSansThai(color: Colors.white54, fontSize: 13.sp),
             ),
           ],
         ),
       ),
     );
   }
+
 
   void _showTextContentDialog(BuildContext context, VideoLesson lesson) {
     showDialog(
@@ -1451,110 +1470,242 @@ class _CoursePlayerScreenState extends ConsumerState<CoursePlayerScreen>
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setDialogState) {
-            return AlertDialog(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-              ),
-              backgroundColor: AppTheme.surfaceColor,
-              title: Column(
-                children: [
-                  Icon(Icons.rate_review_rounded, size: 48.sp, color: AppTheme.primaryColor),
-                  SizedBox(height: 12.h),
-                  Text(
-                    'ให้คะแนนและรีวิวคอร์สเรียน',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 18.sp,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.darkGrey,
+            String getRatingFeedback(int rating) {
+              switch (rating) {
+                case 1:
+                  return 'ควรปรับปรุง 🙁';
+                case 2:
+                  return 'พอใช้ 😐';
+                case 3:
+                  return 'ปานกลาง 🙂';
+                case 4:
+                  return 'ดีมาก 😊';
+                case 5:
+                default:
+                  return 'ยอดเยี่ยมที่สุด! 😍';
+              }
+            }
+
+            return Dialog(
+              backgroundColor: Colors.transparent,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+                width: MediaQuery.of(context).size.width > 500
+                    ? 420
+                    : double.infinity,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(24.r),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.15),
+                      blurRadius: 24,
+                      offset: const Offset(0, 10),
                     ),
-                  ),
-                  SizedBox(height: 4.h),
-                  Text(
-                    courseName,
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 13.sp,
-                      color: AppTheme.mediumGrey,
-                    ),
-                  ),
-                ],
-              ),
-              content: SingleChildScrollView(
+                  ],
+                ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Star Rating selector
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(5, (index) {
-                        final starValue = index + 1;
-                        final isSelected = starValue <= selectedRating;
-                        return IconButton(
-                          icon: Icon(
-                            isSelected ? Icons.star_rounded : Icons.star_outline_rounded,
-                            size: 36.sp,
-                            color: isSelected ? const Color(0xFFFFC107) : AppTheme.mediumGrey,
-                          ),
-                          onPressed: () {
-                            setDialogState(() {
-                              selectedRating = starValue;
-                            });
-                          },
-                        );
-                      }),
-                    ),
-                    SizedBox(height: 16.h),
-                    // Review comment text area
-                    TextField(
-                      controller: textController,
-                      maxLines: 4,
-                      maxLength: 200,
-                      decoration: InputDecoration(
-                        hintText: 'เขียนรีวิวเกี่ยวกับบทเรียนนี้...',
-                        hintStyle: TextStyle(color: AppTheme.mediumGrey, fontSize: 13.sp),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-                          borderSide: BorderSide(color: AppTheme.lightGrey),
+                    // Gradient Header Banner
+                    Container(
+                      height: 110.h,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [
+                            Color(0xFF8B5CF6), // Royal Indigo
+                            Color(0xFF2DC9A8), // Brand Teal
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
                         ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-                          borderSide: BorderSide(color: AppTheme.primaryColor, width: 1.5),
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(24.r),
+                          topRight: Radius.circular(24.r),
                         ),
-                        filled: true,
-                        fillColor: AppTheme.veryLightGrey,
                       ),
-                      style: TextStyle(color: AppTheme.darkGrey, fontSize: 14.sp),
+                      child: Stack(
+                        children: [
+                          Positioned(
+                            top: 8.h,
+                            right: 8.w,
+                            child: IconButton(
+                              icon: const Icon(Icons.close_rounded, color: Colors.white70),
+                              onPressed: () => Navigator.pop(context),
+                            ),
+                          ),
+                          Center(
+                            child: Container(
+                              padding: EdgeInsets.all(10.w),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.18),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Icons.grade_rounded,
+                                size: 36.sp,
+                                color: const Color(0xFFFBBF24),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 20.h),
+                      child: Column(
+                        children: [
+                          Text(
+                            'ให้คะแนนและรีวิวคอร์สเรียน',
+                            style: GoogleFonts.notoSansThai(
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.bold,
+                              color: AppTheme.darkGrey,
+                            ),
+                          ),
+                          SizedBox(height: 6.h),
+                          Container(
+                            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF2DC9A8).withOpacity(0.08),
+                              borderRadius: BorderRadius.circular(20.r),
+                            ),
+                            child: Text(
+                              courseName,
+                              textAlign: TextAlign.center,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.notoSansThai(
+                                fontSize: 11.sp,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF1B8E76),
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 14.h),
+                          // Star rating row using GestureDetector to prevent overflows
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: List.generate(5, (index) {
+                              final starValue = index + 1;
+                              final isSelected = starValue <= selectedRating;
+                              return GestureDetector(
+                                onTap: () {
+                                  setDialogState(() {
+                                    selectedRating = starValue;
+                                  });
+                                },
+                                child: TweenAnimationBuilder<double>(
+                                  tween: Tween<double>(
+                                    begin: 1.0,
+                                    end: isSelected ? 1.15 : 1.0,
+                                  ),
+                                  duration: const Duration(milliseconds: 150),
+                                  builder: (context, scale, child) {
+                                    return Transform.scale(
+                                      scale: scale,
+                                      child: Padding(
+                                        padding: EdgeInsets.symmetric(horizontal: 6.w),
+                                        child: Icon(
+                                          isSelected
+                                              ? Icons.star_rounded
+                                              : Icons.star_outline_rounded,
+                                          size: 32.sp,
+                                          color: isSelected
+                                              ? const Color(0xFFFBBF24)
+                                              : const Color(0xFFCBD5E1),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              );
+                            }),
+                          ),
+                          SizedBox(height: 4.h),
+                          AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 200),
+                            child: Text(
+                              getRatingFeedback(selectedRating),
+                              key: ValueKey<int>(selectedRating),
+                              style: GoogleFonts.notoSansThai(
+                                fontSize: 12.sp,
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFF4F46E5),
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 14.h),
+                          TextField(
+                            controller: textController,
+                            maxLines: 3,
+                            maxLength: 150,
+                            style: GoogleFonts.notoSansThai(
+                              fontSize: 12.5.sp,
+                              color: AppTheme.darkGrey,
+                            ),
+                            decoration: InputDecoration(
+                              hintText: 'เขียนความรู้สึกหรือข้อเสนอแนะเกี่ยวกับคอร์สนี้...',
+                              hintStyle: GoogleFonts.notoSansThai(
+                                color: AppTheme.mediumGrey,
+                                fontSize: 11.5.sp,
+                              ),
+                              contentPadding: EdgeInsets.all(12.w),
+                              filled: true,
+                              fillColor: const Color(0xFFF8FAFC),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12.r),
+                                borderSide: const BorderSide(
+                                  color: Color(0xFFE2E8F0),
+                                  width: 1.2,
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12.r),
+                                borderSide: const BorderSide(
+                                  color: Color(0xFF2DC9A8),
+                                  width: 1.5,
+                                ),
+                              ),
+                              counterStyle: GoogleFonts.notoSansThai(fontSize: 10.sp),
+                            ),
+                          ),
+                          SizedBox(height: 16.h),
+                          // Dialog action row using shared Button widgets
+                          Row(
+                            children: [
+                              Expanded(
+                                child: OutlineButton(
+                                  text: 'ยกเลิก',
+                                  borderColor: const Color(0xFFCBD5E1),
+                                  textColor: AppTheme.mediumGrey,
+                                  height: 38.h,
+                                  onPressed: () => Navigator.pop(context),
+                                ),
+                              ),
+                              SizedBox(width: 10.w),
+                              Expanded(
+                                child: PrimaryButton(
+                                  text: 'ส่งรีวิว',
+                                  backgroundColor: const Color(0xFF2DC9A8),
+                                  height: 38.h,
+                                  onPressed: () {
+                                    final reviewText = textController.text.trim();
+                                    Navigator.pop(context);
+                                    _submitReview(courseName, selectedRating, reviewText);
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
               ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: Text(
-                    'ยกเลิก',
-                    style: TextStyle(color: AppTheme.mediumGrey),
-                  ),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    final reviewText = textController.text.trim();
-                    Navigator.pop(context);
-                    _submitReview(courseName, selectedRating, reviewText);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryColor,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-                    ),
-                  ),
-                  child: const Text('ส่งรีวิว'),
-                ),
-              ],
             );
           },
         );
